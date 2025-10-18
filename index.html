@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Market Impact Pro</title>
+    <title>Market Impact Pro - Real-Time Trade Alerts Powered by AI</title>
+    <meta name="description" content="Get trade-ready analysis within seconds of market-moving headlines. AI-powered alerts from CNBC, Fed, earnings, and more.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -12,17 +13,31 @@
         .gradient-text { background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .glass { background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(148, 163, 184, 0.1); }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .card { animation: fadeIn 0.5s ease-out; }
         .card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(59, 130, 246, 0.4); }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s; }
+        .live-pulse { animation: pulse 2s infinite; }
+        .new-alert { animation: slideIn 0.4s ease-out; }
+        .filter-chip { transition: all 0.2s; }
+        .filter-chip:hover { transform: scale(1.05); }
+        .filter-chip.active { background: linear-gradient(135deg, #3b82f6, #8b5cf6); }
     </style>
 </head>
 <body class="text-white min-h-screen">
     
+    <!-- Sticky CTA Bar -->
+    <div class="fixed top-4 right-4 z-50">
+        <button onclick="scrollToSignup()" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-6 py-3 rounded-full font-bold shadow-2xl transition-all hover:scale-105">
+            🚀 Start Free
+        </button>
+    </div>
+
     <!-- Header -->
-    <header class="glass sticky top-0 z-50 border-b border-slate-700/50 shadow-2xl">
-        <div class="max-w-7xl mx-auto px-6 py-5">
+    <header class="glass sticky top-0 z-40 border-b border-slate-700/50 shadow-2xl">
+        <div class="max-w-7xl mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <div class="bg-gradient-to-br from-blue-500 to-purple-600 p-3 rounded-xl shadow-lg">
@@ -31,280 +46,321 @@
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-3xl font-black gradient-text">Market Impact Pro</h1>
-                        <p class="text-sm text-slate-400 font-medium">AI-Powered Trade Intelligence</p>
+                        <h1 class="text-2xl font-black gradient-text">Market Impact Pro</h1>
+                        <p class="text-xs text-slate-400 font-medium">AI-Powered Trade Intelligence</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="bg-green-500/20 border border-green-500/40 px-4 py-2 rounded-full flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></span>
-                        <span class="text-green-400 font-bold text-sm">LIVE</span>
+                
+                <!-- Trust Badges -->
+                <div class="hidden md:flex items-center gap-3">
+                    <div class="bg-green-500/20 border border-green-500/40 px-3 py-1.5 rounded-full flex items-center gap-2">
+                        <span class="w-2 h-2 bg-green-500 rounded-full live-pulse"></span>
+                        <span class="text-green-400 font-bold text-xs">LIVE</span>
+                    </div>
+                    <div class="bg-slate-800/50 px-3 py-1.5 rounded-full text-xs font-semibold" id="alertCount">
+                        <span id="countNum">0</span> alerts today
+                    </div>
+                    <div class="bg-blue-900/30 border border-blue-500/30 px-3 py-1.5 rounded-full text-xs font-semibold text-blue-300" id="latencyBadge">
+                        ⚡ ~8s latency
                     </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Navigation Tabs -->
-    <nav class="glass border-b border-slate-700/50">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex gap-1 overflow-x-auto">
-                <button onclick="switchTab('alerts')" class="tab-btn px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 border-blue-500 text-white">
-                    📊 Live Alerts
+    <!-- Hero Section -->
+    <section class="max-w-7xl mx-auto px-6 py-16">
+        <div class="text-center max-w-4xl mx-auto">
+            <h2 class="text-6xl font-black mb-6 leading-tight">
+                Get Trade-Ready Analysis<br/>
+                <span class="gradient-text">Within Seconds</span> of Headlines
+            </h2>
+            <p class="text-2xl text-slate-400 mb-8">
+                AI-powered alerts from CNBC, Fed announcements, earnings reports, and market-moving news. Never miss an opportunity.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8" id="signupSection">
+                <button onclick="connectTelegram()" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-8 py-4 rounded-xl font-bold text-lg shadow-xl transition-all hover:scale-105 flex items-center gap-3">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/></svg>
+                    Connect Telegram • Free
                 </button>
-                <button onclick="switchTab('education')" class="tab-btn px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 border-transparent text-slate-400 hover:text-white">
-                    📚 Education Center
-                </button>
-                <button onclick="switchTab('about')" class="tab-btn px-6 py-4 font-bold text-sm whitespace-nowrap border-b-2 border-transparent text-slate-400 hover:text-white">
-                    ℹ️ About
-                </button>
+                <input type="email" placeholder="Enter your email" class="bg-slate-800/50 border border-slate-700 px-6 py-4 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500" id="emailInput">
             </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-6 py-10">
-        
-        <!-- ALERTS TAB -->
-        <div id="tab-alerts" class="tab-content active">
-            <div class="mb-10 flex items-center justify-between">
-                <div>
-                    <h2 class="text-5xl font-black mb-3">Breaking Market Alerts</h2>
-                    <p class="text-xl text-slate-400">Real-time AI analysis of market-moving news</p>
+            
+            <p class="text-sm text-slate-500">No credit card required • 20 alerts/month free tier</p>
+            
+            <!-- Stats Bar -->
+            <div class="grid grid-cols-3 gap-6 mt-12 max-w-2xl mx-auto">
+                <div class="text-center">
+                    <div class="text-3xl font-black gradient-text">~8s</div>
+                    <div class="text-sm text-slate-400 mt-1">Avg Latency</div>
                 </div>
-                <button onclick="loadAlerts()" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-6 py-3 rounded-xl font-bold shadow-lg transition-all">
-                    🔄 Refresh
-                </button>
-            </div>
-
-            <div id="alertsContainer" class="space-y-6">
-                <div class="flex items-center justify-center py-20">
-                    <div class="animate-spin w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+                <div class="text-center">
+                    <div class="text-3xl font-black gradient-text">3</div>
+                    <div class="text-sm text-slate-400 mt-1">News Sources</div>
                 </div>
-            </div>
-        </div>
-
-        <!-- EDUCATION TAB -->
-        <div id="tab-education" class="tab-content">
-            <div class="mb-10">
-                <h2 class="text-5xl font-black mb-3 gradient-text">Trading Education Center</h2>
-                <p class="text-xl text-slate-400">Master the fundamentals of options trading and market analysis</p>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="glass rounded-2xl p-8 card">
-                    <div class="text-5xl mb-4">📚</div>
-                    <h3 class="text-2xl font-bold mb-4">Options Basics</h3>
-                    <div class="space-y-4 text-slate-300 leading-relaxed">
-                        <p><strong class="text-white">Call Options:</strong> Contract giving you the RIGHT (not obligation) to BUY stock at a specific strike price. You profit when the stock goes UP above your strike.</p>
-                        <p><strong class="text-white">Put Options:</strong> Contract giving you the RIGHT to SELL stock at strike price. You profit when stock goes DOWN below your strike.</p>
-                        <p><strong class="text-white">Strike Price:</strong> The agreed price to buy/sell. Choose based on your conviction - closer strikes cost more but are more likely to profit.</p>
-                        <p><strong class="text-white">Expiration Date:</strong> When the option expires. More time = higher premium = more expensive.</p>
-                        <p><strong class="text-white">Premium:</strong> The price you pay for the option. This is your maximum risk - options can go to $0.</p>
-                    </div>
-                </div>
-
-                <div class="glass rounded-2xl p-8 card">
-                    <div class="text-5xl mb-4">🎯</div>
-                    <h3 class="text-2xl font-bold mb-4">Understanding The Greeks</h3>
-                    <div class="space-y-4 text-slate-300 leading-relaxed">
-                        <p><strong class="text-white">Delta (Δ):</strong> How much the option price moves for every $1 stock move. Delta 0.30-0.40 means balanced risk/reward. Higher delta = more stock-like behavior.</p>
-                        <p><strong class="text-white">Theta (Θ):</strong> Time decay. How much value your option loses each day. Options lose value faster as expiration approaches, especially in the final 30 days.</p>
-                        <p><strong class="text-white">Vega (ν):</strong> Sensitivity to volatility changes. Big news = volatility spike = option premiums increase. Great for buyers, bad for sellers.</p>
-                        <p><strong class="text-white">Gamma (Γ):</strong> Rate of delta change. Higher for at-the-money options. Accelerates your gains OR losses as stock moves.</p>
-                    </div>
-                </div>
-
-                <div class="glass rounded-2xl p-8 card">
-                    <div class="text-5xl mb-4">💰</div>
-                    <h3 class="text-2xl font-bold mb-4">Smart Position Sizing</h3>
-                    <div class="space-y-4 text-slate-300 leading-relaxed">
-                        <p><strong class="text-white">The 1-2% Rule:</strong> Never risk more than 1-2% of your total account on any single trade. This protects you from catastrophic losses and keeps you in the game.</p>
-                        <p><strong class="text-white">Options Sizing:</strong> Start with 0.5-1% of account due to higher volatility and leverage. Options can expire worthless, so size accordingly.</p>
-                        <p><strong class="text-white">Shares Sizing:</strong> Can allocate 1-3% with proper stop losses. Less risky than options but still requires discipline.</p>
-                        <p><strong class="text-white">Diversification:</strong> Don't put all capital in one sector. Spread across uncorrelated positions to reduce portfolio volatility.</p>
-                    </div>
-                </div>
-
-                <div class="glass rounded-2xl p-8 card">
-                    <div class="text-5xl mb-4">⚠️</div>
-                    <h3 class="text-2xl font-bold mb-4">Risk Management Rules</h3>
-                    <div class="space-y-4 text-slate-300 leading-relaxed">
-                        <p><strong class="text-white">Always Use Stop Losses:</strong> Pre-determine your exit if the trade goes against you. Typically 3-5% for shares, 50% loss for options premiums.</p>
-                        <p><strong class="text-white">Take Profits:</strong> Greed kills accounts. When you hit your target (20-50% for options, 5-10% for shares), take profits. You can always re-enter.</p>
-                        <p><strong class="text-white">Thesis Invalidation:</strong> If the reason you entered changes (news reverses, data contradicts), exit immediately regardless of profit/loss.</p>
-                        <p><strong class="text-white">Never Average Down:</strong> Don't add to losing positions hoping they recover. Cut losers fast, let winners run with trailing stops.</p>
-                    </div>
+                <div class="text-center">
+                    <div class="text-3xl font-black gradient-text" id="heroAlertCount">0</div>
+                    <div class="text-sm text-slate-400 mt-1">Today's Alerts</div>
                 </div>
             </div>
         </div>
+    </section>
 
-        <!-- ABOUT TAB -->
-        <div id="tab-about" class="tab-content">
-            <div class="max-w-4xl mx-auto">
-                <div class="text-center mb-12">
-                    <h2 class="text-5xl font-black mb-4 gradient-text">About Market Impact Pro</h2>
-                    <p class="text-xl text-slate-400">Enterprise-grade AI analysis for retail traders</p>
+    <!-- Filters & Search -->
+    <section class="max-w-7xl mx-auto px-6 mb-8">
+        <div class="glass rounded-2xl p-6">
+            <div class="flex flex-col lg:flex-row gap-4 items-center justify-between">
+                <!-- Search -->
+                <div class="flex-1 w-full lg:max-w-md">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Search by ticker, keyword..."
+                        class="w-full bg-slate-800/50 border border-slate-700 px-4 py-3 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                        onkeyup="filterAlerts()"
+                    >
                 </div>
                 
-                <div class="glass rounded-2xl p-10 mb-8 card">
-                    <h3 class="text-3xl font-bold mb-6">🤖 Powered by Claude AI</h3>
-                    <p class="text-slate-300 text-lg leading-relaxed mb-4">
-                        Market Impact Pro uses Anthropic's Claude Sonnet 4.5 - one of the most advanced AI models available - to analyze breaking news in real-time and generate actionable trade ideas within seconds.
-                    </p>
-                    <p class="text-slate-300 text-lg leading-relaxed">
-                        Every alert includes: market impact assessment, affected assets, specific trade strategies with entry/exit points, risk factors, and invalidation triggers. All delivered instantly to your devices.
-                    </p>
+                <!-- Filters -->
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="setFilter('all')" class="filter-chip active px-4 py-2 rounded-full font-semibold text-sm bg-slate-800" data-filter="all">
+                        All
+                    </button>
+                    <button onclick="setFilter('macro')" class="filter-chip px-4 py-2 rounded-full font-semibold text-sm bg-slate-800" data-filter="macro">
+                        📊 Macro
+                    </button>
+                    <button onclick="setFilter('sector')" class="filter-chip px-4 py-2 rounded-full font-semibold text-sm bg-slate-800" data-filter="sector">
+                        🏭 Sector
+                    </button>
+                    <button onclick="setFilter('commodity')" class="filter-chip px-4 py-2 rounded-full font-semibold text-sm bg-slate-800" data-filter="commodity">
+                        ⚡ Commodity
+                    </button>
                 </div>
+                
+                <!-- Refresh -->
+                <button onclick="loadAlerts(true)" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+        </div>
+    </section>
 
-                <div class="bg-gradient-to-r from-yellow-900/20 to-red-900/20 border-2 border-yellow-600/50 rounded-2xl p-8 card">
-                    <div class="flex items-start gap-4">
-                        <div class="text-4xl">⚠️</div>
-                        <div>
-                            <h3 class="text-2xl font-bold text-yellow-400 mb-3">Important Disclaimer</h3>
-                            <p class="text-slate-300 leading-relaxed">
-                                This platform is for educational and informational purposes only. <strong>NOT financial advice.</strong> Trading involves substantial risk of loss. Past performance doesn't indicate future results. Always consult a licensed financial advisor before making investment decisions.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+    <!-- Live Feed -->
+    <main class="max-w-7xl mx-auto px-6 pb-16">
+        <div class="mb-6 flex items-center justify-between">
+            <h3 class="text-3xl font-black">Live Market Alerts</h3>
+            <div class="text-sm text-slate-400" id="lastUpdate">
+                Updated <span id="updateTime">just now</span>
             </div>
         </div>
 
+        <div id="alertsContainer" class="space-y-6">
+            <div class="flex items-center justify-center py-20">
+                <div class="animate-spin w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+            </div>
+        </div>
     </main>
 
     <footer class="mt-16 border-t border-slate-800 py-8">
-        <div class="max-w-7xl mx-auto px-6 text-center">
-            <p class="text-slate-500 text-sm">⚠️ Not financial advice. For informational and educational purposes only.</p>
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-slate-500 text-sm">⚠️ Not financial advice. For educational purposes only.</p>
+                <div class="flex gap-6 text-sm text-slate-400">
+                    <a href="#" class="hover:text-white">Terms</a>
+                    <a href="#" class="hover:text-white">Privacy</a>
+                    <a href="#" class="hover:text-white">Risk Disclosure</a>
+                    <a href="#" class="hover:text-white">How It Works</a>
+                </div>
+            </div>
         </div>
     </footer>
 
     <script>
         const API_URL = 'https://market-impact-bot-v2.onrender.com/api/alerts';
         let allAlerts = [];
+        let currentFilter = 'all';
+        let lastFetchTime = Date.now();
 
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => {
-                el.classList.remove('border-blue-500', 'text-white');
-                el.classList.add('border-transparent', 'text-slate-400');
-            });
-            
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-            const buttons = document.querySelectorAll('.tab-btn');
-            const index = tabName === 'alerts' ? 0 : tabName === 'education' ? 1 : 2;
-            buttons[index].classList.remove('border-transparent', 'text-slate-400');
-            buttons[index].classList.add('border-blue-500', 'text-white');
+        function scrollToSignup() {
+            document.getElementById('signupSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        async function loadAlerts() {
+        function connectTelegram() {
+            alert('🤖 To connect Telegram:\n\n1. Open Telegram\n2. Search for your bot\n3. Send /start\n\nYou\'ll receive alerts instantly!');
+        }
+
+        function timeAgo(timestamp) {
+            const now = Date.now();
+            const diff = now - new Date(timestamp).getTime();
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (seconds < 60) return 'just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            return `${days}d ago`;
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-chip').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+            filterAlerts();
+        }
+
+        function filterAlerts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allAlerts.filter(alert => {
+                const event = alert.event || {};
+                const matchesFilter = currentFilter === 'all' || event.category === currentFilter;
+                const matchesSearch = !searchTerm || 
+                    event.headline?.toLowerCase().includes(searchTerm) ||
+                    alert.trade_idea?.ticker?.toLowerCase().includes(searchTerm) ||
+                    alert.affected_assets?.some(a => a.ticker.toLowerCase().includes(searchTerm));
+                return matchesFilter && matchesSearch;
+            });
+            renderAlerts(filtered);
+        }
+
+        async function loadAlerts(showNotification = false) {
             try {
                 const response = await fetch(API_URL);
                 const data = await response.json();
-                allAlerts = data.alerts || [];
-                renderAlerts();
+                const newAlerts = data.alerts || [];
+                
+                if (showNotification && newAlerts.length > allAlerts.length) {
+                    const diff = newAlerts.length - allAlerts.length;
+                    showToast(`${diff} new alert${diff > 1 ? 's' : ''} received!`);
+                }
+                
+                allAlerts = newAlerts;
+                lastFetchTime = Date.now();
+                
+                // Update badges
+                document.getElementById('countNum').textContent = allAlerts.length;
+                document.getElementById('heroAlertCount').textContent = allAlerts.length;
+                document.getElementById('updateTime').textContent = timeAgo(lastFetchTime);
+                
+                filterAlerts();
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('alertsContainer').innerHTML = `
-                    <div class="glass rounded-2xl p-12 text-center">
-                        <div class="text-6xl mb-4">⚠️</div>
-                        <h3 class="text-2xl font-bold mb-2">Connection Error</h3>
-                        <p class="text-slate-400">Unable to load alerts</p>
-                    </div>
-                `;
             }
         }
 
-        function renderAlerts() {
+        function renderAlerts(alerts) {
             const container = document.getElementById('alertsContainer');
             
-            if (allAlerts.length === 0) {
+            if (alerts.length === 0) {
                 container.innerHTML = `
                     <div class="glass rounded-2xl p-16 text-center">
                         <div class="text-8xl mb-6">📭</div>
-                        <h3 class="text-3xl font-black mb-3">No Alerts Yet</h3>
-                        <p class="text-xl text-slate-400">Market-moving news will appear here automatically</p>
+                        <h3 class="text-3xl font-black mb-3">No Matching Alerts</h3>
+                        <p class="text-xl text-slate-400">Try adjusting your filters or search</p>
                     </div>
                 `;
                 return;
             }
 
-            container.innerHTML = allAlerts.map((alert) => {
+            container.innerHTML = alerts.map((alert) => {
                 const event = alert.event || {};
                 const trade = alert.trade_idea || {};
                 const isUp = trade.direction === 'bullish';
-                const assets = (alert.affected_assets || []).slice(0, 8);
+                const assets = (alert.affected_assets || []).slice(0, 6);
                 const confidence = Math.round((event.confidence || 0) * 100);
+                const timestamp = event.detected_at || new Date().toISOString();
 
                 return `
-                    <div class="card glass rounded-2xl overflow-hidden transition-all duration-300 hover:border-blue-500/50">
+                    <div class="card new-alert glass rounded-2xl overflow-hidden transition-all duration-300 hover:border-blue-500/50">
                         <div class="bg-gradient-to-r from-blue-600/30 to-purple-600/30 p-6 border-b border-slate-700/50">
-                            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                            <div class="flex items-start justify-between gap-4 mb-3">
                                 <h3 class="text-2xl font-bold flex-1 leading-tight">${event.headline || 'Breaking News'}</h3>
-                                <div class="flex gap-2 flex-wrap">
-                                    <span class="bg-slate-800/80 px-4 py-2 rounded-full text-sm font-semibold">${event.category || 'general'}</span>
-                                    <span class="bg-green-500/20 text-green-400 border border-green-500/30 px-4 py-2 rounded-full text-sm font-bold">${confidence}%</span>
-                                </div>
+                                <div class="text-sm text-slate-400">${timeAgo(timestamp)}</div>
+                            </div>
+                            <div class="flex gap-2 flex-wrap">
+                                <span class="bg-slate-800/80 px-3 py-1 rounded-full text-xs font-semibold">${event.category || 'general'}</span>
+                                <span class="bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-xs font-bold">${confidence}% confidence</span>
+                                <span class="bg-blue-900/30 text-blue-300 px-3 py-1 rounded-full text-xs font-semibold">${event.source || 'telegram'}</span>
                             </div>
                         </div>
                         
-                        <div class="p-6 space-y-6">
-                            <div class="flex flex-wrap items-center gap-4">
-                                <span class="text-4xl font-black font-mono">${trade.ticker || 'N/A'}</span>
-                                <div class="flex items-center gap-2 ${isUp ? 'bg-green-500/20 border-green-500/30' : 'bg-red-500/20 border-red-500/30'} border px-5 py-2 rounded-full">
-                                    <span class="text-2xl">${isUp ? '📈' : '📉'}</span>
-                                    <span class="${isUp ? 'text-green-400' : 'text-red-400'} font-bold text-lg">${isUp ? 'BULLISH' : 'BEARISH'}</span>
+                        <div class="p-6 space-y-5">
+                            <div class="flex flex-wrap items-center gap-3">
+                                <span class="text-3xl font-black font-mono">${trade.ticker || 'N/A'}</span>
+                                <div class="flex items-center gap-2 ${isUp ? 'bg-green-500/20 border-green-500/30' : 'bg-red-500/20 border-red-500/30'} border px-4 py-1.5 rounded-full">
+                                    <span class="text-xl">${isUp ? '📈' : '📉'}</span>
+                                    <span class="${isUp ? 'text-green-400' : 'text-red-400'} font-bold">${isUp ? 'BULLISH' : 'BEARISH'}</span>
                                 </div>
-                                <span class="bg-blue-600 px-4 py-2 rounded-full font-semibold">${(trade.strategy || 'monitor').toUpperCase()}</span>
-                                ${trade.ticker ? `<a href="https://finance.yahoo.com/quote/${trade.ticker}" target="_blank" class="text-blue-400 hover:text-blue-300 underline text-sm">View Chart →</a>` : ''}
+                                <span class="bg-blue-600 px-3 py-1.5 rounded-full font-semibold text-sm">${(trade.strategy || 'monitor').toUpperCase()}</span>
+                                ${trade.ticker ? `<a href="https://finance.yahoo.com/quote/${trade.ticker}" target="_blank" class="text-blue-400 hover:text-blue-300 underline text-sm font-semibold">View Chart →</a>` : ''}
                             </div>
 
-                            <div class="bg-slate-800/40 rounded-xl p-5">
-                                <h4 class="text-lg font-bold mb-3 flex items-center gap-2">
-                                    <span class="text-2xl">💡</span>
+                            <div class="bg-slate-800/40 rounded-xl p-4">
+                                <h4 class="font-bold mb-2 flex items-center gap-2 text-sm">
+                                    <span class="text-xl">💡</span>
                                     Why It Matters
                                 </h4>
-                                <ul class="space-y-2.5 text-slate-300">
+                                <ul class="space-y-1.5 text-slate-300 text-sm">
                                     ${(alert.why_it_matters || []).slice(0, 3).map(point => `
-                                        <li class="flex gap-3">
-                                            <span class="text-blue-400 text-lg">▸</span>
+                                        <li class="flex gap-2">
+                                            <span class="text-blue-400">▸</span>
                                             <span>${point}</span>
                                         </li>
                                     `).join('')}
                                 </ul>
                             </div>
 
-                            <div>
-                                <h4 class="text-lg font-bold mb-3">Affected Assets</h4>
-                                <div class="flex flex-wrap gap-2">
-                                    ${assets.map(a => `
-                                        <a href="https://finance.yahoo.com/quote/${a.ticker}" target="_blank" class="bg-slate-800/50 hover:bg-slate-700/50 px-4 py-2 rounded-lg font-mono font-bold transition">
-                                            ${a.ticker} <span class="${a.direction === 'up' ? 'text-green-400' : 'text-red-400'}">${a.direction === 'up' ? '↑' : '↓'}</span>
-                                        </a>
-                                    `).join('')}
-                                </div>
-                            </div>
-
-                            <div class="bg-gradient-to-br from-slate-800/60 to-slate-800/40 rounded-xl p-5 border border-slate-700/50">
-                                <h5 class="font-bold mb-3 text-lg">${trade.strategy ? '🎯' : '💼'} Trade Idea</h5>
-                                <p class="text-slate-300 mb-4">${trade.rationale || 'Analysis in progress'}</p>
-                                ${trade.risk ? `
-                                    <div class="bg-red-900/20 border border-red-800/50 rounded-lg p-3">
-                                        <p class="text-red-300 text-sm"><strong>Risk:</strong> ${trade.risk}</p>
+                            ${assets.length > 0 ? `
+                                <div>
+                                    <h4 class="font-bold mb-2 text-sm">Related Tickers</h4>
+                                    <div class="flex flex-wrap gap-2">
+                                        ${assets.map(a => `
+                                            <a href="https://finance.yahoo.com/quote/${a.ticker}" target="_blank" class="bg-slate-800/50 hover:bg-slate-700/50 px-3 py-1.5 rounded-lg font-mono font-bold text-sm transition">
+                                                ${a.ticker} <span class="${a.direction === 'up' ? 'text-green-400' : 'text-red-400'}">${a.direction === 'up' ? '↑' : '↓'}</span>
+                                            </a>
+                                        `).join('')}
                                     </div>
-                                ` : ''}
-                            </div>
+                                </div>
+                            ` : ''}
+
+                            ${trade.rationale ? `
+                                <div class="bg-gradient-to-br from-slate-800/60 to-slate-800/40 rounded-xl p-4 border border-slate-700/50">
+                                    <h5 class="font-bold mb-2 text-sm">🎯 Trade Rationale</h5>
+                                    <p class="text-slate-300 text-sm leading-relaxed mb-3">${trade.rationale.substring(0, 300)}${trade.rationale.length > 300 ? '...' : ''}</p>
+                                    ${trade.risk ? `
+                                        <div class="bg-red-900/20 border border-red-800/50 rounded-lg p-3">
+                                            <p class="text-red-300 text-xs"><strong>⚠️ Risk:</strong> ${trade.risk.substring(0, 200)}${trade.risk.length > 200 ? '...' : ''}</p>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // Load alerts on page load
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl z-50 animate-slideIn';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        setInterval(() => {
+            document.getElementById('updateTime').textContent = timeAgo(lastFetchTime);
+        }, 30000);
+
         loadAlerts();
-        
-        // Auto-refresh every 30 seconds
-        setInterval(loadAlerts, 30000);
+        setInterval(() => loadAlerts(true), 15000);
     </script>
 
 </body>
