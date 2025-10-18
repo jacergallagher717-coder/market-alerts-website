@@ -67,85 +67,19 @@
         
         <!-- ALERTS TAB -->
         <div id="tab-alerts" class="tab-content active">
-            <div class="mb-10">
-                <h2 class="text-5xl font-black mb-3">Breaking Market Alerts</h2>
-                <p class="text-xl text-slate-400">Real-time AI analysis of market-moving news</p>
+            <div class="mb-10 flex items-center justify-between">
+                <div>
+                    <h2 class="text-5xl font-black mb-3">Breaking Market Alerts</h2>
+                    <p class="text-xl text-slate-400">Real-time AI analysis of market-moving news</p>
+                </div>
+                <button onclick="loadAlerts()" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-6 py-3 rounded-xl font-bold shadow-lg transition-all">
+                    🔄 Refresh
+                </button>
             </div>
 
-            <div class="space-y-6">
-                <!-- Alert 1 -->
-                <div class="card glass rounded-2xl overflow-hidden transition-all duration-300 hover:border-blue-500/50">
-                    <div class="bg-gradient-to-r from-blue-600/30 to-purple-600/30 p-6 border-b border-slate-700/50">
-                        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                            <h3 class="text-2xl font-bold flex-1 leading-tight">Fed signals additional rate cuts ahead</h3>
-                            <div class="flex gap-2 flex-wrap">
-                                <span class="bg-slate-800/80 px-4 py-2 rounded-full text-sm font-semibold">macro</span>
-                                <span class="bg-green-500/20 text-green-400 border border-green-500/30 px-4 py-2 rounded-full text-sm font-bold">95%</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="p-6 space-y-6">
-                        <div class="flex flex-wrap items-center gap-4">
-                            <span class="text-4xl font-black font-mono">IWM</span>
-                            <div class="flex items-center gap-2 bg-green-500/20 border border-green-500/30 px-5 py-2 rounded-full">
-                                <span class="text-2xl">📈</span>
-                                <span class="text-green-400 font-bold text-lg">BULLISH</span>
-                            </div>
-                            <span class="bg-blue-600 px-4 py-2 rounded-full font-semibold">CALLS</span>
-                            <a href="https://finance.yahoo.com/quote/IWM" target="_blank" class="text-blue-400 hover:text-blue-300 underline text-sm">View Chart →</a>
-                        </div>
-
-                        <div class="bg-slate-800/40 rounded-xl p-5">
-                            <h4 class="text-lg font-bold mb-3 flex items-center gap-2">
-                                <span class="text-2xl">💡</span>
-                                Why It Matters
-                            </h4>
-                            <ul class="space-y-2.5 text-slate-300">
-                                <li class="flex gap-3"><span class="text-blue-400 text-lg">▸</span><span>Lower rates reduce borrowing costs, stimulating economic activity</span></li>
-                                <li class="flex gap-3"><span class="text-blue-400 text-lg">▸</span><span>Small caps highly sensitive to domestic rates and refinancing costs</span></li>
-                                <li class="flex gap-3"><span class="text-blue-400 text-lg">▸</span><span>Historical data shows small caps outperform 6-12 months post-easing</span></li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h4 class="text-lg font-bold mb-3">Affected Assets</h4>
-                            <div class="flex flex-wrap gap-2">
-                                <a href="https://finance.yahoo.com/quote/XLF" target="_blank" class="bg-slate-800/50 hover:bg-slate-700/50 px-4 py-2 rounded-lg font-mono font-bold transition">XLF <span class="text-green-400">↑</span></a>
-                                <a href="https://finance.yahoo.com/quote/XLK" target="_blank" class="bg-slate-800/50 hover:bg-slate-700/50 px-4 py-2 rounded-lg font-mono font-bold transition">XLK <span class="text-green-400">↑</span></a>
-                                <a href="https://finance.yahoo.com/quote/IWM" target="_blank" class="bg-slate-800/50 hover:bg-slate-700/50 px-4 py-2 rounded-lg font-mono font-bold transition">IWM <span class="text-green-400">↑</span></a>
-                                <a href="https://finance.yahoo.com/quote/TLT" target="_blank" class="bg-slate-800/50 hover:bg-slate-700/50 px-4 py-2 rounded-lg font-mono font-bold transition">TLT <span class="text-green-400">↑</span></a>
-                                <a href="https://finance.yahoo.com/quote/GLD" target="_blank" class="bg-slate-800/50 hover:bg-slate-700/50 px-4 py-2 rounded-lg font-mono font-bold transition">GLD <span class="text-green-400">↑</span></a>
-                            </div>
-                        </div>
-
-                        <div class="grid md:grid-cols-2 gap-4">
-                            <div class="bg-gradient-to-br from-slate-800/60 to-slate-800/40 rounded-xl p-5 border border-slate-700/50">
-                                <h5 class="font-bold mb-3 text-lg">💼 Buy Shares</h5>
-                                <div class="space-y-2 text-sm">
-                                    <div class="flex justify-between"><span class="text-slate-400">Action:</span><span class="font-semibold">BUY</span></div>
-                                    <div class="flex justify-between"><span class="text-slate-400">Entry:</span><span class="font-semibold">Market</span></div>
-                                    <div class="flex justify-between"><span class="text-slate-400">Size:</span><span class="font-semibold">1-2% account</span></div>
-                                    <div class="flex justify-between"><span class="text-slate-400">Stop:</span><span class="font-semibold">-3% to -5%</span></div>
-                                </div>
-                            </div>
-
-                            <div class="bg-gradient-to-br from-blue-900/40 to-blue-900/20 rounded-xl p-5 border border-blue-700/50">
-                                <h5 class="font-bold mb-3 text-lg">📈 Call Options</h5>
-                                <div class="space-y-2 text-sm">
-                                    <div class="flex justify-between"><span class="text-slate-400">Delta:</span><span class="font-semibold">0.30-0.40</span></div>
-                                    <div class="flex justify-between"><span class="text-slate-400">Expiry:</span><span class="font-semibold">4-6 weeks</span></div>
-                                    <div class="flex justify-between"><span class="text-slate-400">Size:</span><span class="font-semibold">0.5-1% account</span></div>
-                                    <div class="flex justify-between"><span class="text-slate-400">Max Risk:</span><span class="font-semibold">Premium paid</span></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-red-900/20 border border-red-800/50 rounded-xl p-5">
-                            <h5 class="font-bold text-red-400 mb-2 flex items-center gap-2"><span class="text-xl">⚠️</span>Risk Assessment</h5>
-                            <p class="text-red-300/90 text-sm">Economic data deterioration suggesting Fed cutting due to recession fears would reverse the bullish thesis. Monitor employment and GDP data closely.</p>
-                        </div>
-                    </div>
+            <div id="alertsContainer" class="space-y-6">
+                <div class="flex items-center justify-center py-20">
+                    <div class="animate-spin w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full"></div>
                 </div>
             </div>
         </div>
@@ -158,7 +92,6 @@
             </div>
 
             <div class="grid md:grid-cols-2 gap-6">
-                <!-- Options Basics -->
                 <div class="glass rounded-2xl p-8 card">
                     <div class="text-5xl mb-4">📚</div>
                     <h3 class="text-2xl font-bold mb-4">Options Basics</h3>
@@ -171,7 +104,6 @@
                     </div>
                 </div>
 
-                <!-- The Greeks -->
                 <div class="glass rounded-2xl p-8 card">
                     <div class="text-5xl mb-4">🎯</div>
                     <h3 class="text-2xl font-bold mb-4">Understanding The Greeks</h3>
@@ -183,7 +115,6 @@
                     </div>
                 </div>
 
-                <!-- Position Sizing -->
                 <div class="glass rounded-2xl p-8 card">
                     <div class="text-5xl mb-4">💰</div>
                     <h3 class="text-2xl font-bold mb-4">Smart Position Sizing</h3>
@@ -195,7 +126,6 @@
                     </div>
                 </div>
 
-                <!-- Risk Management -->
                 <div class="glass rounded-2xl p-8 card">
                     <div class="text-5xl mb-4">⚠️</div>
                     <h3 class="text-2xl font-bold mb-4">Risk Management Rules</h3>
@@ -243,7 +173,6 @@
 
     </main>
 
-    <!-- Footer -->
     <footer class="mt-16 border-t border-slate-800 py-8">
         <div class="max-w-7xl mx-auto px-6 text-center">
             <p class="text-slate-500 text-sm">⚠️ Not financial advice. For informational and educational purposes only.</p>
@@ -251,25 +180,131 @@
     </footer>
 
     <script>
+        const API_URL = 'https://market-impact-bot-v2.onrender.com/api/alerts';
+        let allAlerts = [];
+
         function switchTab(tabName) {
-            // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            
-            // Reset all tab buttons
             document.querySelectorAll('.tab-btn').forEach(el => {
                 el.classList.remove('border-blue-500', 'text-white');
                 el.classList.add('border-transparent', 'text-slate-400');
             });
             
-            // Show selected tab
             document.getElementById(`tab-${tabName}`).classList.add('active');
-            
-            // Highlight selected button
             const buttons = document.querySelectorAll('.tab-btn');
             const index = tabName === 'alerts' ? 0 : tabName === 'education' ? 1 : 2;
             buttons[index].classList.remove('border-transparent', 'text-slate-400');
             buttons[index].classList.add('border-blue-500', 'text-white');
         }
+
+        async function loadAlerts() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                allAlerts = data.alerts || [];
+                renderAlerts();
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('alertsContainer').innerHTML = `
+                    <div class="glass rounded-2xl p-12 text-center">
+                        <div class="text-6xl mb-4">⚠️</div>
+                        <h3 class="text-2xl font-bold mb-2">Connection Error</h3>
+                        <p class="text-slate-400">Unable to load alerts</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderAlerts() {
+            const container = document.getElementById('alertsContainer');
+            
+            if (allAlerts.length === 0) {
+                container.innerHTML = `
+                    <div class="glass rounded-2xl p-16 text-center">
+                        <div class="text-8xl mb-6">📭</div>
+                        <h3 class="text-3xl font-black mb-3">No Alerts Yet</h3>
+                        <p class="text-xl text-slate-400">Market-moving news will appear here automatically</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = allAlerts.map((alert) => {
+                const event = alert.event || {};
+                const trade = alert.trade_idea || {};
+                const isUp = trade.direction === 'bullish';
+                const assets = (alert.affected_assets || []).slice(0, 8);
+                const confidence = Math.round((event.confidence || 0) * 100);
+
+                return `
+                    <div class="card glass rounded-2xl overflow-hidden transition-all duration-300 hover:border-blue-500/50">
+                        <div class="bg-gradient-to-r from-blue-600/30 to-purple-600/30 p-6 border-b border-slate-700/50">
+                            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                                <h3 class="text-2xl font-bold flex-1 leading-tight">${event.headline || 'Breaking News'}</h3>
+                                <div class="flex gap-2 flex-wrap">
+                                    <span class="bg-slate-800/80 px-4 py-2 rounded-full text-sm font-semibold">${event.category || 'general'}</span>
+                                    <span class="bg-green-500/20 text-green-400 border border-green-500/30 px-4 py-2 rounded-full text-sm font-bold">${confidence}%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6 space-y-6">
+                            <div class="flex flex-wrap items-center gap-4">
+                                <span class="text-4xl font-black font-mono">${trade.ticker || 'N/A'}</span>
+                                <div class="flex items-center gap-2 ${isUp ? 'bg-green-500/20 border-green-500/30' : 'bg-red-500/20 border-red-500/30'} border px-5 py-2 rounded-full">
+                                    <span class="text-2xl">${isUp ? '📈' : '📉'}</span>
+                                    <span class="${isUp ? 'text-green-400' : 'text-red-400'} font-bold text-lg">${isUp ? 'BULLISH' : 'BEARISH'}</span>
+                                </div>
+                                <span class="bg-blue-600 px-4 py-2 rounded-full font-semibold">${(trade.strategy || 'monitor').toUpperCase()}</span>
+                                ${trade.ticker ? `<a href="https://finance.yahoo.com/quote/${trade.ticker}" target="_blank" class="text-blue-400 hover:text-blue-300 underline text-sm">View Chart →</a>` : ''}
+                            </div>
+
+                            <div class="bg-slate-800/40 rounded-xl p-5">
+                                <h4 class="text-lg font-bold mb-3 flex items-center gap-2">
+                                    <span class="text-2xl">💡</span>
+                                    Why It Matters
+                                </h4>
+                                <ul class="space-y-2.5 text-slate-300">
+                                    ${(alert.why_it_matters || []).slice(0, 3).map(point => `
+                                        <li class="flex gap-3">
+                                            <span class="text-blue-400 text-lg">▸</span>
+                                            <span>${point}</span>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h4 class="text-lg font-bold mb-3">Affected Assets</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    ${assets.map(a => `
+                                        <a href="https://finance.yahoo.com/quote/${a.ticker}" target="_blank" class="bg-slate-800/50 hover:bg-slate-700/50 px-4 py-2 rounded-lg font-mono font-bold transition">
+                                            ${a.ticker} <span class="${a.direction === 'up' ? 'text-green-400' : 'text-red-400'}">${a.direction === 'up' ? '↑' : '↓'}</span>
+                                        </a>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="bg-gradient-to-br from-slate-800/60 to-slate-800/40 rounded-xl p-5 border border-slate-700/50">
+                                <h5 class="font-bold mb-3 text-lg">${trade.strategy ? '🎯' : '💼'} Trade Idea</h5>
+                                <p class="text-slate-300 mb-4">${trade.rationale || 'Analysis in progress'}</p>
+                                ${trade.risk ? `
+                                    <div class="bg-red-900/20 border border-red-800/50 rounded-lg p-3">
+                                        <p class="text-red-300 text-sm"><strong>Risk:</strong> ${trade.risk}</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Load alerts on page load
+        loadAlerts();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadAlerts, 30000);
     </script>
 
 </body>
