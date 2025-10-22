@@ -1565,8 +1565,9 @@
 
             container.innerHTML = alerts.map((alert, index) => {
                 const event = alert.event || {};
-                const trade = alert.trade_idea || {};
-                const isUp = trade.direction === 'bullish';
+                const tradeIdeas = alert.trade_ideas || [];
+                const scenarios = alert.scenarios || {};
+                const primaryDirection = event.primary_direction || 'neutral';
                 const assets = (alert.affected_assets || []).slice(0, 6);
                 const confidence = Math.round((event.confidence || 0) * 100);
                 const timestamp = event.detected_at || new Date().toISOString();
@@ -1581,11 +1582,15 @@
                             </div>
                             <div class="flex gap-2 flex-wrap mb-4">
                                 <span class="bg-slate-800/80 px-3 py-1 rounded-full text-xs font-semibold">${event.category || 'general'}</span>
-                                <span class="bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-xs font-bold">${confidence}% confidence</span>
-                                ${trade.ticker ? `<span class="bg-blue-600 px-3 py-1 rounded-full text-xs font-bold">${trade.ticker}</span>` : ''}
-                                <span class="${isUp ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30'} border px-3 py-1 rounded-full text-xs font-bold">
-                                    ${isUp ? '📈 BULLISH' : '📉 BEARISH'}
+                                <span class="${
+                                    primaryDirection === 'bullish' ? 'bg-green-600/30 text-green-300 border-green-500/40' : 
+                                    primaryDirection === 'bearish' ? 'bg-red-600/30 text-red-300 border-red-500/40' : 
+                                    'bg-gray-600/30 text-gray-300 border-gray-500/40'
+                                } border px-3 py-1 rounded-full text-xs font-bold">
+                                    ${primaryDirection === 'bullish' ? '📈 BULLISH' : primaryDirection === 'bearish' ? '📉 BEARISH' : '➖ NEUTRAL'}
                                 </span>
+                                <span class="bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-xs font-bold">${confidence}% confidence</span>
+                                ${tradeIdeas.length > 0 ? `<span class="bg-purple-600 px-3 py-1 rounded-full text-xs font-bold">${tradeIdeas.length} Trade Ideas</span>` : ''}
                             </div>
                             <button 
                                 id="btn-${index}"
@@ -1598,25 +1603,18 @@
                         
                         <!-- Expandable Details -->
                         <div id="details-${index}" class="alert-details">
-                            <div class="p-6 space-y-5">
-                                <!-- Primary Trade -->
-                                <div class="flex flex-wrap items-center gap-3">
-                                    <span class="text-3xl font-black font-mono">${trade.ticker || 'N/A'}</span>
-                                    <span class="bg-blue-600 px-3 py-1.5 rounded-full font-semibold text-sm">${(trade.strategy || 'monitor').toUpperCase()}</span>
-                                    ${trade.ticker ? `<a href="https://finance.yahoo.com/quote/${trade.ticker}" target="_blank" class="text-blue-400 hover:text-blue-300 underline text-sm font-semibold">View Chart →</a>` : ''}
-                                </div>
-
+                            <div class="p-6 space-y-6">
                                 <!-- Why It Matters -->
                                 ${alert.why_it_matters && alert.why_it_matters.length > 0 ? `
                                     <div class="bg-slate-800/40 rounded-xl p-4">
-                                        <h4 class="font-bold mb-2 flex items-center gap-2 text-sm">
+                                        <h4 class="font-bold mb-3 flex items-center gap-2">
                                             <span class="text-xl">💡</span>
                                             Why It Matters
                                         </h4>
-                                        <ul class="space-y-1.5 text-slate-300 text-sm">
-                                            ${alert.why_it_matters.slice(0, 3).map(point => `
+                                        <ul class="space-y-2 text-slate-300 text-sm">
+                                            ${alert.why_it_matters.map(point => `
                                                 <li class="flex gap-2">
-                                                    <span class="text-blue-400">▸</span>
+                                                    <span class="text-blue-400 flex-shrink-0">•</span>
                                                     <span>${point}</span>
                                                 </li>
                                             `).join('')}
@@ -1624,30 +1622,140 @@
                                     </div>
                                 ` : ''}
 
-                                <!-- Affected Assets -->
-                                ${assets.length > 0 ? `
+                                <!-- Multiple Trade Ideas -->
+                                ${tradeIdeas.length > 0 ? `
                                     <div>
-                                        <h4 class="font-bold mb-2 text-sm">Related Tickers</h4>
-                                        <div class="flex flex-wrap gap-2">
-                                            ${assets.map(a => `
-                                                <a href="https://finance.yahoo.com/quote/${a.ticker}" target="_blank" class="bg-slate-800/50 hover:bg-slate-700/50 px-3 py-1.5 rounded-lg font-mono font-bold text-sm transition">
-                                                    ${a.ticker} <span class="${a.direction === 'up' ? 'text-green-400' : 'text-red-400'}">${a.direction === 'up' ? '↑' : '↓'}</span>
-                                                </a>
-                                            `).join('')}
+                                        <h4 class="font-bold text-lg mb-4 flex items-center gap-2">
+                                            <span class="text-xl">🎯</span>
+                                            Trade Ideas (${tradeIdeas.length})
+                                            <span class="text-xs font-normal text-slate-400">- Ranked by conviction</span>
+                                        </h4>
+                                        <div class="space-y-4">
+                                            ${tradeIdeas.map((trade, i) => {
+                                                const isBullish = trade.direction === 'bullish';
+                                                const convictionColor = 
+                                                    trade.conviction === 'high' ? 'text-green-400' :
+                                                    trade.conviction === 'medium' ? 'text-yellow-400' :
+                                                    'text-orange-400';
+                                                
+                                                return `
+                                                    <div class="bg-gradient-to-br from-slate-800/60 to-slate-800/40 rounded-xl p-5 border border-slate-700/50 hover:border-blue-500/50 transition-all">
+                                                        <!-- Trade Header -->
+                                                        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                                                            <div class="flex items-center gap-3">
+                                                                <span class="text-xs font-bold text-slate-400">#${i + 1}</span>
+                                                                <span class="font-mono font-black text-2xl">${trade.ticker}</span>
+                                                                <span class="${isBullish ? 'bg-green-500/20 text-green-400 border-green-500/40' : 'bg-red-500/20 text-red-400 border-red-500/40'} border px-3 py-1 rounded-full text-xs font-bold">
+                                                                    ${isBullish ? '📈 BULLISH' : '📉 BEARISH'}
+                                                                </span>
+                                                            </div>
+                                                            <div class="flex items-center gap-2">
+                                                                <span class="bg-blue-600 px-3 py-1 rounded text-xs font-bold">${trade.strategy.toUpperCase()}</span>
+                                                                <span class="${convictionColor} text-xs font-bold">${trade.conviction.toUpperCase()}</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Rationale -->
+                                                        <div class="bg-slate-900/50 rounded-lg p-4 mb-3">
+                                                            <h5 class="font-semibold text-blue-400 mb-2 text-sm">💡 Rationale</h5>
+                                                            <p class="text-slate-300 text-sm">${trade.rationale}</p>
+                                                        </div>
+
+                                                        <!-- Risk & Chart Link -->
+                                                        <div class="flex gap-2 flex-wrap">
+                                                            ${trade.risk ? `
+                                                                <div class="flex-1 bg-red-900/20 border border-red-800/50 rounded-lg p-3">
+                                                                    <p class="text-red-300 text-xs"><strong>⚠️ Risk:</strong> ${trade.risk}</p>
+                                                                </div>
+                                                            ` : ''}
+                                                            <a href="https://finance.yahoo.com/quote/${trade.ticker}" target="_blank" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-semibold transition">
+                                                                View Chart →
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                `;
+                                            }).join('')}
                                         </div>
                                     </div>
                                 ` : ''}
 
-                                <!-- Trade Rationale -->
-                                ${trade.rationale ? `
-                                    <div class="bg-gradient-to-br from-slate-800/60 to-slate-800/40 rounded-xl p-4 border border-slate-700/50">
-                                        <h5 class="font-bold mb-2 text-sm">🎯 Trade Rationale</h5>
-                                        <p class="text-slate-300 text-sm leading-relaxed mb-3">${trade.rationale}</p>
-                                        ${trade.risk ? `
-                                            <div class="bg-red-900/20 border border-red-800/50 rounded-lg p-3">
-                                                <p class="text-red-300 text-xs"><strong>⚠️ Risk:</strong> ${trade.risk}</p>
-                                            </div>
-                                        ` : ''}
+                                <!-- Market Scenarios -->
+                                ${scenarios.bull_case || scenarios.base_case || scenarios.bear_case ? `
+                                    <div>
+                                        <h4 class="font-bold text-lg mb-4 flex items-center gap-2">
+                                            <span class="text-xl">📊</span>
+                                            Market Scenarios
+                                        </h4>
+                                        <div class="space-y-3">
+                                            <!-- Bull Case -->
+                                            ${scenarios.bull_case ? `
+                                                <div class="bg-gradient-to-br from-green-900/30 to-green-800/20 border border-green-600/40 rounded-xl p-5">
+                                                    <div class="flex items-center justify-between mb-3">
+                                                        <h5 class="font-bold text-green-400">🐂 Bull Case</h5>
+                                                        <span class="bg-slate-900/50 px-3 py-1 rounded-full text-sm font-semibold">${scenarios.bull_case.probability}</span>
+                                                    </div>
+                                                    <p class="text-slate-300 text-sm mb-3">${scenarios.bull_case.description}</p>
+                                                    ${scenarios.bull_case.affected_assets && scenarios.bull_case.affected_assets.length > 0 ? `
+                                                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                                            ${scenarios.bull_case.affected_assets.map(asset => `
+                                                                <div class="bg-slate-900/50 rounded-lg p-2 flex items-center justify-between">
+                                                                    <span class="font-mono font-bold text-xs">${asset.ticker}</span>
+                                                                    <span class="${asset.impact === 'up' ? 'text-green-400' : 'text-red-400'} text-sm">
+                                                                        ${asset.impact === 'up' ? '↑' : '↓'} ${asset.magnitude}
+                                                                    </span>
+                                                                </div>
+                                                            `).join('')}
+                                                        </div>
+                                                    ` : ''}
+                                                </div>
+                                            ` : ''}
+
+                                            <!-- Base Case -->
+                                            ${scenarios.base_case ? `
+                                                <div class="bg-gradient-to-br from-blue-900/30 to-blue-800/20 border border-blue-600/40 rounded-xl p-5">
+                                                    <div class="flex items-center justify-between mb-3">
+                                                        <h5 class="font-bold text-blue-400">📊 Base Case</h5>
+                                                        <span class="bg-slate-900/50 px-3 py-1 rounded-full text-sm font-semibold">${scenarios.base_case.probability}</span>
+                                                    </div>
+                                                    <p class="text-slate-300 text-sm mb-3">${scenarios.base_case.description}</p>
+                                                    ${scenarios.base_case.affected_assets && scenarios.base_case.affected_assets.length > 0 ? `
+                                                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                                            ${scenarios.base_case.affected_assets.map(asset => `
+                                                                <div class="bg-slate-900/50 rounded-lg p-2 flex items-center justify-between">
+                                                                    <span class="font-mono font-bold text-xs">${asset.ticker}</span>
+                                                                    <span class="${asset.impact === 'up' ? 'text-green-400' : 'text-red-400'} text-sm">
+                                                                        ${asset.impact === 'up' ? '↑' : '↓'} ${asset.magnitude}
+                                                                    </span>
+                                                                </div>
+                                                            `).join('')}
+                                                        </div>
+                                                    ` : ''}
+                                                </div>
+                                            ` : ''}
+
+                                            <!-- Bear Case -->
+                                            ${scenarios.bear_case ? `
+                                                <div class="bg-gradient-to-br from-red-900/30 to-red-800/20 border border-red-600/40 rounded-xl p-5">
+                                                    <div class="flex items-center justify-between mb-3">
+                                                        <h5 class="font-bold text-red-400">🐻 Bear Case</h5>
+                                                        <span class="bg-slate-900/50 px-3 py-1 rounded-full text-sm font-semibold">${scenarios.bear_case.probability}</span>
+                                                    </div>
+                                                    <p class="text-slate-300 text-sm mb-3">${scenarios.bear_case.description}</p>
+                                                    ${scenarios.bear_case.affected_assets && scenarios.bear_case.affected_assets.length > 0 ? `
+                                                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                                            ${scenarios.bear_case.affected_assets.map(asset => `
+                                                                <div class="bg-slate-900/50 rounded-lg p-2 flex items-center justify-between">
+                                                                    <span class="font-mono font-bold text-xs">${asset.ticker}</span>
+                                                                    <span class="${asset.impact === 'up' ? 'text-green-400' : 'text-red-400'} text-sm">
+                                                                        ${asset.impact === 'up' ? '↑' : '↓'} ${asset.magnitude}
+                                                                    </span>
+                                                                </div>
+                                                            `).join('')}
+                                                        </div>
+                                                    ` : ''}
+                                                </div>
+                                            ` : ''}
+                                        </div>
                                     </div>
                                 ` : ''}
                             </div>
