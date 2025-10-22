@@ -1565,7 +1565,7 @@
 
             container.innerHTML = alerts.map((alert, index) => {
                 const event = alert.event || {};
-                const tradeIdeas = alert.trade_ideas || [];
+                const tradeIdeas = alert.trade_ideas || (alert.trade_idea ? [alert.trade_idea] : []);
                 const scenarios = alert.scenarios || {};
                 const primaryDirection = event.primary_direction || 'neutral';
                 const assets = (alert.affected_assets || []).slice(0, 6);
