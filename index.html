@@ -43,17 +43,74 @@
         .video-card { position: relative; overflow: hidden; cursor: pointer; }
         .video-card::before { content: '▶'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; color: white; z-index: 10; opacity: 0.8; }
         .video-card:hover::before { opacity: 1; }
+        
+        /* Auth Modal Styles */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 100; display: none; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: #1e293b; border-radius: 1rem; max-width: 28rem; width: 90%; padding: 2rem; border: 1px solid #334155; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
     </style>
 </head>
 <body class="text-white min-h-screen">
     
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-white" id="authTitle">Welcome Back</h2>
+                    <p class="text-gray-400 text-sm" id="authSubtitle">Login to track your portfolio</p>
+                </div>
+                <button onclick="closeAuthModal()" class="text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div id="authError" class="hidden bg-red-500/10 border border-red-500/50 rounded-lg p-3 mb-4">
+                <p class="text-red-400 text-sm"></p>
+            </div>
+            
+            <form onsubmit="handleAuth(event)" class="space-y-4">
+                <div id="displayNameField" class="hidden">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Display Name (Optional)</label>
+                    <input type="text" id="displayName" class="w-full px-4 py-3 bg-slate-800 border border-gray-700 rounded-lg text-white" placeholder="John Doe">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                    <input type="email" id="authEmail" required class="w-full px-4 py-3 bg-slate-800 border border-gray-700 rounded-lg text-white" placeholder="you@example.com">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                    <input type="password" id="authPassword" required minlength="6" class="w-full px-4 py-3 bg-slate-800 border border-gray-700 rounded-lg text-white" placeholder="••••••••">
+                </div>
+                
+                <button type="submit" id="authSubmitBtn" class="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-purple-700 transition">
+                    Login
+                </button>
+            </form>
+            
+            <div class="mt-4 text-center">
+                <button onclick="toggleAuthMode()" class="text-blue-400 hover:text-blue-300 text-sm" id="authToggle">
+                    Don't have an account? Sign up
+                </button>
+            </div>
+            
+            <div class="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                <p class="text-xs text-blue-300">💡 <strong>Pro Tip:</strong> Track trades & see your P&L!</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Sticky CTA Bar -->
     <div class="fixed top-4 right-4 z-50">
         <button onclick="scrollToSignup()" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-6 py-3 rounded-full font-bold shadow-2xl transition-all hover:scale-105">
             🚀 Start Free
         </button>
     </div>
-
+    
     <!-- Header -->
     <header class="glass sticky top-0 z-40 border-b border-slate-700/50 shadow-2xl">
         <div class="max-w-7xl mx-auto px-6 py-4">
@@ -81,6 +138,32 @@
                         </div>
                         <div class="bg-slate-800/50 px-3 py-1.5 rounded-full text-xs font-semibold">
                             <span id="countNum">0</span> alerts today
+                        </div>
+                    </div>
+                    
+                    <!-- Auth Button / User Menu -->
+                    <div id="authButtonContainer">
+                        <button onclick="openAuthModal()" class="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-purple-700 transition">
+                            Login / Sign Up
+                        </button>
+                    </div>
+                    
+                    <div id="userMenuContainer" class="hidden relative">
+                        <button onclick="toggleUserMenu()" class="flex items-center space-x-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition">
+                            <div id="userAvatar" class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                U
+                            </div>
+                            <span id="userName" class="text-white text-sm">User</span>
+                        </button>
+                        
+                        <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg border border-gray-700 py-2">
+                            <div class="px-4 py-2 border-b border-gray-700">
+                                <p class="text-xs text-gray-400">Signed in as</p>
+                                <p id="userEmail" class="text-sm font-medium text-white truncate">user@example.com</p>
+                            </div>
+                            <button onclick="logout()" class="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700 transition">
+                                🚪 Logout
+                            </button>
                         </div>
                     </div>
                 </nav>
@@ -221,7 +304,6 @@
                 Updated <span id="updateTime">just now</span>
             </div>
         </div>
-
         <div id="alertsContainer" class="space-y-4">
             <div class="flex items-center justify-center py-20">
                 <div class="animate-spin w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full"></div>
@@ -712,263 +794,67 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <!-- Lesson 2: Options Strategies -->
+            <!-- Risk Management Course -->
+            <div id="course-risk" class="tab-content">
+                <div class="space-y-6">
                     <div class="glass rounded-xl p-6">
-                        <h3 class="text-2xl font-bold mb-4">Lesson 2: Common Options Strategies for News Events</h3>
+                        <h3 class="text-2xl font-bold mb-4">Lesson 1: Position Sizing & Stop Losses</h3>
                         
+                        <div class="bg-red-900/20 border border-red-500/30 rounded-lg p-4 mb-6">
+                            <h4 class="font-bold text-red-300 mb-2">⚠️ Golden Rule</h4>
+                            <p class="text-lg">Never risk more than 1-2% of your portfolio on a single news-driven trade.</p>
+                        </div>
+
                         <div class="space-y-4">
-                            <div class="bg-gradient-to-br from-blue-900/30 to-blue-800/20 border border-blue-500/30 rounded-lg p-4">
-                                <h4 class="font-bold text-blue-300 mb-2 flex items-center gap-2">
-                                    <span>1️⃣</span> Long Call (Bullish)
-                                </h4>
-                                <p class="text-sm text-slate-300 mb-2"><strong>When to use:</strong> Expecting big positive news (earnings beat, FDA approval, merger)</p>
-                                <div class="text-xs space-y-1 text-slate-400">
-                                    <div>• Max Risk: Premium paid</div>
-                                    <div>• Max Reward: Unlimited</div>
-                                    <div>• Example: Buy $50 calls before earnings if expecting blowout quarter</div>
+                            <div class="bg-slate-800/50 rounded-lg p-4">
+                                <h4 class="font-bold mb-3">📐 Position Sizing Formula</h4>
+                                <div class="bg-slate-900/50 rounded p-3 font-mono text-sm mb-3">
+                                    Position Size = (Account Size × Risk %) / (Entry Price - Stop Loss)
                                 </div>
-                            </div>
-
-                            <div class="bg-gradient-to-br from-red-900/30 to-red-800/20 border border-red-500/30 rounded-lg p-4">
-                                <h4 class="font-bold text-red-300 mb-2 flex items-center gap-2">
-                                    <span>2️⃣</span> Long Put (Bearish)
-                                </h4>
-                                <p class="text-sm text-slate-300 mb-2"><strong>When to use:</strong> Expecting bad news (earnings miss, regulatory action, guidance cut)</p>
-                                <div class="text-xs space-y-1 text-slate-400">
-                                    <div>• Max Risk: Premium paid</div>
-                                    <div>• Max Reward: Strike price - premium</div>
-                                    <div>• Example: Buy puts before Fed announcement if expecting hawkish surprise</div>
-                                </div>
-                            </div>
-
-                            <div class="bg-gradient-to-br from-purple-900/30 to-purple-800/20 border border-purple-500/30 rounded-lg p-4">
-                                <h4 class="font-bold text-purple-300 mb-2 flex items-center gap-2">
-                                    <span>3️⃣</span> Vertical Spread (Defined Risk)
-                                </h4>
-                                <p class="text-sm text-slate-300 mb-2"><strong>When to use:</strong> Moderate directional move expected, want to reduce cost</p>
-                                <div class="text-xs space-y-1 text-slate-400 mb-2">
-                                    <div>• Bull Call Spread: Buy ATM call + Sell OTM call</div>
-                                    <div>• Bear Put Spread: Buy ATM put + Sell OTM put</div>
-                                    <div>• Example: Stock at $100, buy $100 call + sell $110 call for net $3</div>
-                                </div>
-                                <div class="bg-slate-900/50 rounded p-2 text-xs">
-                                    <strong>Max Profit:</strong> Width of strikes - net premium
-                                    <br/><strong>Max Loss:</strong> Net premium paid
-                                </div>
-                            </div>
-
-                            <div class="bg-gradient-to-br from-yellow-900/30 to-yellow-800/20 border border-yellow-500/30 rounded-lg p-4">
-                                <h4 class="font-bold text-yellow-300 mb-2 flex items-center gap-2">
-                                    <span>4️⃣</span> Straddle (High Volatility Play)
-                                </h4>
-                                <p class="text-sm text-slate-300 mb-2"><strong>When to use:</strong> Big move expected but direction uncertain (earnings, FDA, court ruling)</p>
-                                <div class="text-xs space-y-1 text-slate-400">
-                                    <div>• Buy ATM call + ATM put (same strike, same expiration)</div>
-                                    <div>• Profit if stock moves significantly in EITHER direction</div>
-                                    <div>• Example: Stock at $50, buy $50 call + $50 put. Profit if stock moves beyond $50 ± premium paid</div>
+                                <div class="text-sm text-slate-300">
+                                    <strong>Example:</strong> $10,000 account, 1% risk ($100), stock at $50, stop at $48
+                                    <br/>
+                                    Position = $100 / ($50 - $48) = 50 shares
                                 </div>
                             </div>
 
                             <div class="bg-slate-800/50 rounded-lg p-4">
-                                <h4 class="font-bold mb-3">🎯 Strategy Selection for News Events</h4>
-                                <table class="w-full text-sm">
-                                    <thead>
-                                        <tr class="border-b border-slate-700">
-                                            <th class="text-left pb-2">News Event</th>
-                                            <th class="text-left pb-2">Best Strategy</th>
-                                            <th class="text-left pb-2">Why</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="text-slate-300 text-xs">
-                                        <tr class="border-b border-slate-700/50">
-                                            <td class="py-2">Earnings (bullish expected)</td>
-                                            <td class="py-2 text-green-400">Long Call</td>
-                                            <td class="py-2">Maximum upside if beat</td>
-                                        </tr>
-                                        <tr class="border-b border-slate-700/50">
-                                            <td class="py-2">FDA decision (binary)</td>
-                                            <td class="py-2 text-yellow-400">Straddle</td>
-                                            <td class="py-2">Big move either way</td>
-                                        </tr>
-                                        <tr class="border-b border-slate-700/50">
-                                            <td class="py-2">Fed meeting (modest cut)</td>
-                                            <td class="py-2 text-purple-400">Bull Call Spread</td>
-                                            <td class="py-2">Defined risk, lower cost</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="py-2">Guidance warning</td>
-                                            <td class="py-2 text-red-400">Long Put</td>
-                                            <td class="py-2">Capitalize on selloff</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Lesson 3: The Greeks -->
-                    <div class="glass rounded-xl p-6">
-                        <h3 class="text-2xl font-bold mb-4">Lesson 3: Understanding The Greeks</h3>
-                        <p class="text-slate-300 mb-4">
-                            The "Greeks" measure how option prices change based on different factors. Critical for timing your entries and exits.
-                        </p>
-
-                        <div class="grid md:grid-cols-2 gap-4">
-                            <div class="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="text-2xl">Δ</span>
-                                    <h4 class="font-bold text-blue-300">Delta</h4>
-                                </div>
-                                <p class="text-sm text-slate-300 mb-2">How much option price changes per $1 move in stock</p>
-                                <div class="text-xs space-y-1 text-slate-400">
-                                    <div>• Range: 0 to 1 (calls) or 0 to -1 (puts)</div>
-                                    <div>• ATM options ≈ 0.50 delta</div>
-                                    <div>• Example: 0.70 delta call gains $0.70 per $1 stock increase</div>
-                                </div>
+                                <h4 class="font-bold mb-3">🛡️ Stop Loss Guidelines for News Trading</h4>
+                                <ul class="space-y-2 text-sm text-slate-300">
+                                    <li class="flex gap-2">
+                                        <span class="text-blue-400">•</span>
+                                        <span><strong>Tight stops (1-2%):</strong> For momentum plays with high conviction</span>
+                                    </li>
+                                    <li class="flex gap-2">
+                                        <span class="text-blue-400">•</span>
+                                        <span><strong>Medium stops (3-5%):</strong> For swing trades based on fundamental shifts</span>
+                                    </li>
+                                    <li class="flex gap-2">
+                                        <span class="text-blue-400">•</span>
+                                        <span><strong>Wide stops (5-10%):</strong> For high-volatility events (earnings, Fed)</span>
+                                    </li>
+                                </ul>
                             </div>
 
-                            <div class="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="text-2xl">Θ</span>
-                                    <h4 class="font-bold text-red-300">Theta</h4>
-                                </div>
-                                <p class="text-sm text-slate-300 mb-2">Time decay - how much value lost per day</p>
-                                <div class="text-xs space-y-1 text-slate-400">
-                                    <div>• Always negative for option buyers</div>
-                                    <div>• Accelerates in final 30 days before expiration</div>
-                                    <div>• Example: -0.05 theta means option loses $5/day in value</div>
-                                </div>
+                            <div class="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
+                                <h4 class="font-bold text-yellow-300 mb-3">💡 Pro Tip: Time-Based Exits</h4>
+                                <p class="text-sm text-slate-300">
+                                    News-driven moves often exhaust within 30-60 minutes. Consider exiting profitable trades even without hitting your price target if momentum fades.
+                                </p>
                             </div>
 
-                            <div class="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="text-2xl">V</span>
-                                    <h4 class="font-bold text-purple-300">Vega</h4>
-                                </div>
-                                <p class="text-sm text-slate-300 mb-2">Sensitivity to volatility changes</p>
-                                <div class="text-xs space-y-1 text-slate-400">
-                                    <div>• Higher before earnings/events</div>
-                                    <div>• "IV crush" = drop after news</div>
-                                    <div>• Example: Vega of 0.10 means +$10 per 1% volatility increase</div>
-                                </div>
-                            </div>
-
-                            <div class="bg-green-900/20 border border-green-500/30 rounded-lg p-4">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="text-2xl">Γ</span>
-                                    <h4 class="font-bold text-green-300">Gamma</h4>
-                                </div>
-                                <p class="text-sm text-slate-300 mb-2">Rate of change of delta</p>
-                                <div class="text-xs space-y-1 text-slate-400">
-                                    <div>• Highest for ATM options</div>
-                                    <div>• Increases near expiration</div>
-                                    <div>• Important for quick moves</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4 mt-4">
-                            <h4 class="font-bold text-yellow-300 mb-3">⚡ News Trading Tip: IV Crush</h4>
-                            <p class="text-sm text-slate-300">
-                                <strong>Implied Volatility (IV)</strong> spikes before major news events like earnings, then crashes after the announcement - even if you're right on direction! This is called "IV crush."
-                            </p>
-                            <div class="mt-3 bg-slate-900/50 rounded p-3 text-xs">
-                                <strong>Example:</strong> You buy calls before earnings. Stock jumps 5%, but your calls only gain 2% due to IV dropping from 80% to 40% post-earnings. Always factor in IV crush when trading options around news events.
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Lesson 4: Timing & Execution -->
-                    <div class="glass rounded-xl p-6">
-                        <h3 class="text-2xl font-bold mb-4">Lesson 4: Timing Your Options Trades</h3>
-                        
-                        <div class="space-y-4">
-                            <div class="bg-slate-800/50 rounded-lg p-4">
-                                <h4 class="font-bold mb-3">📅 Choosing Expiration Dates</h4>
-                                <div class="space-y-3 text-sm text-slate-300">
-                                    <div class="flex gap-3">
-                                        <div class="bg-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0">1</div>
-                                        <div>
-                                            <strong>0-7 DTE (Days to Expiration):</strong> Ultra-short term for same-day news plays. High gamma, extreme theta decay. For experts only.
-                                        </div>
-                                    </div>
-                                    <div class="flex gap-3">
-                                        <div class="bg-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0">2</div>
-                                        <div>
-                                            <strong>30-45 DTE:</strong> Sweet spot for earnings and news events. Balance of time value and cost.
-                                        </div>
-                                    </div>
-                                    <div class="flex gap-3">
-                                        <div class="bg-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0">3</div>
-                                        <div>
-                                            <strong>60-90 DTE:</strong> For multi-event catalysts or giving your thesis time to play out.
-                                        </div>
-                                    </div>
-                                    <div class="flex gap-3">
-                                        <div class="bg-blue-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0">4</div>
-                                        <div>
-                                            <strong>LEAPS (1+ year):</strong> Long-term directional bets, lower theta decay but expensive.
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="grid md:grid-cols-2 gap-4">
-                                <div class="bg-green-900/20 border border-green-500/30 rounded-lg p-4">
-                                    <h4 class="font-bold text-green-300 mb-2">✅ Best Practices</h4>
-                                    <ul class="text-xs space-y-1 text-slate-300">
-                                        <li>• Buy options with 30-60 days until expiration for news events</li>
-                                        <li>• Enter positions 1-5 days before the event</li>
-                                        <li>• Set profit targets (20-50% gains)</li>
-                                        <li>• Close winners quickly - don't get greedy</li>
-                                        <li>• Check IV percentile before buying (avoid if >75%)</li>
-                                    </ul>
-                                </div>
-
-                                <div class="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
-                                    <h4 class="font-bold text-red-300 mb-2">❌ Common Mistakes</h4>
-                                    <ul class="text-xs space-y-1 text-slate-300">
-                                        <li>• Buying options the day of earnings (IV crush)</li>
-                                        <li>• Holding through expiration week (theta burn)</li>
-                                        <li>• Buying deep OTM "lottery tickets"</li>
-                                        <li>• Not having an exit plan</li>
-                                        <li>• Ignoring bid-ask spreads on illiquid options</li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <div class="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
-                                <h4 class="font-bold text-blue-300 mb-3">🎯 Real Example: Trading NVDA Earnings</h4>
-                                <div class="space-y-2 text-sm">
-                                    <div><strong>Scenario:</strong> NVDA earnings in 10 days, expecting strong AI demand to drive beat</div>
-                                    <div class="bg-slate-900/50 rounded p-3 space-y-1 text-xs">
-                                        <div>Current Stock Price: $875</div>
-                                        <div>Strategy: Buy $900 calls, 45 DTE</div>
-                                        <div>Premium: $25.00 ($2,500 per contract)</div>
-                                        <div>Delta: 0.45 | Theta: -0.35 | IV: 65%</div>
-                                    </div>
-                                    <div class="grid md:grid-cols-2 gap-2 mt-2">
-                                        <div class="bg-green-900/20 border border-green-500/30 rounded p-2 text-xs">
-                                            <strong class="text-green-300">If NVDA → $920 post-earnings:</strong>
-                                            <br/>Option value ≈ $35-40
-                                            <br/>Profit: $1,000-1,500 (40-60%)
-                                        </div>
-                                        <div class="bg-red-900/20 border border-red-500/30 rounded p-2 text-xs">
-                                            <strong class="text-red-300">If NVDA stays flat:</strong>
-                                            <br/>IV crush to 40%, time decay
-                                            <br/>Option value ≈ $15
-                                            <br/>Loss: $1,000 (40%)
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <button onclick="completeLesson('risk', 0)" class="mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold transition text-sm w-full md:w-auto">
+                                Mark Lesson Complete
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Options Calculator Tool -->
+            <!-- Calculator Course -->
             <div id="course-calculator" class="tab-content">
                 <div class="glass rounded-xl p-6">
                     <h3 class="text-2xl font-bold mb-6">🧮 Options Profit Calculator</h3>
@@ -1294,89 +1180,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Risk Management Course -->
-            <div id="course-risk" class="tab-content">
-                <div class="space-y-6">
-                    <div class="glass rounded-xl p-6">
-                        <h3 class="text-2xl font-bold mb-4">Lesson 1: Position Sizing & Stop Losses</h3>
-                        
-                        <div class="bg-red-900/20 border border-red-500/30 rounded-lg p-4 mb-6">
-                            <h4 class="font-bold text-red-300 mb-2">⚠️ Golden Rule</h4>
-                            <p class="text-lg">Never risk more than 1-2% of your portfolio on a single news-driven trade.</p>
-                        </div>
-
-                        <div class="space-y-4">
-                            <div class="bg-slate-800/50 rounded-lg p-4">
-                                <h4 class="font-bold mb-3">📐 Position Sizing Formula</h4>
-                                <div class="bg-slate-900/50 rounded p-3 font-mono text-sm mb-3">
-                                    Position Size = (Account Size × Risk %) / (Entry Price - Stop Loss)
-                                </div>
-                                <div class="text-sm text-slate-300">
-                                    <strong>Example:</strong> $10,000 account, 1% risk ($100), stock at $50, stop at $48
-                                    <br/>
-                                    Position = $100 / ($50 - $48) = 50 shares
-                                </div>
-                            </div>
-
-                            <div class="bg-slate-800/50 rounded-lg p-4">
-                                <h4 class="font-bold mb-3">🛡️ Stop Loss Guidelines for News Trading</h4>
-                                <ul class="space-y-2 text-sm text-slate-300">
-                                    <li class="flex gap-2">
-                                        <span class="text-blue-400">•</span>
-                                        <span><strong>Tight stops (1-2%):</strong> For momentum plays with high conviction</span>
-                                    </li>
-                                    <li class="flex gap-2">
-                                        <span class="text-blue-400">•</span>
-                                        <span><strong>Medium stops (3-5%):</strong> For swing trades based on fundamental shifts</span>
-                                    </li>
-                                    <li class="flex gap-2">
-                                        <span class="text-blue-400">•</span>
-                                        <span><strong>Wide stops (5-10%):</strong> For high-volatility events (earnings, Fed)</span>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <div class="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
-                                <h4 class="font-bold text-yellow-300 mb-3">💡 Pro Tip: Time-Based Exits</h4>
-                                <p class="text-sm text-slate-300">
-                                    News-driven moves often exhaust within 30-60 minutes. Consider exiting profitable trades even without hitting your price target if momentum fades.
-                                </p>
-                            </div>
-
-                            <button onclick="completeLesson('risk', 0)" class="mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold transition text-sm w-full md:w-auto">
-                                Mark Lesson Complete
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="glass rounded-xl p-6">
-                        <h3 class="text-2xl font-bold mb-4">Lesson 2: Common Mistakes to Avoid</h3>
-                        <div class="grid md:grid-cols-2 gap-4">
-                            <div class="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
-                                <div class="text-3xl mb-2">❌</div>
-                                <h4 class="font-bold text-red-300 mb-2">FOMO Trading</h4>
-                                <p class="text-sm text-slate-300">Chasing a move after it's already happened. Wait for confirmation or pullbacks.</p>
-                            </div>
-                            <div class="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
-                                <div class="text-3xl mb-2">❌</div>
-                                <h4 class="font-bold text-red-300 mb-2">Over-Leveraging</h4>
-                                <p class="text-sm text-slate-300">Using too much marginon news trades. Volatility can wipe you out instantly.</p>
-                            </div>
-                            <div class="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
-                                <div class="text-3xl mb-2">❌</div>
-                                <h4 class="font-bold text-red-300 mb-2">Ignoring Context</h4>
-                                <p class="text-sm text-slate-300">Trading headlines without understanding broader market conditions or sentiment.</p>
-                            </div>
-                            <div class="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
-                                <div class="text-3xl mb-2">❌</div>
-                                <h4 class="font-bold text-red-300 mb-2">No Exit Plan</h4>
-                                <p class="text-sm text-slate-300">Entering without predetermined profit targets or stop losses. Always have a plan.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -1394,13 +1197,20 @@
     </footer>
 
     <script>
-        const API_URL = 'https://market-impact-bot-v2.onrender.com/api/alerts';
+        const API_URL = 'https://market-impact-bot-v2.onrender.com';
+        
+        // ==================== AUTH STATE ====================
+        let currentUser = null;
+        let authToken = null;
+        let isLoginMode = true;
+        
+        // ==================== APP STATE ====================
         let allAlerts = [];
         let currentCategoryFilter = 'all';
         let currentSectorFilter = 'all';
         let currentSort = 'newest';
         let lastFetchTime = Date.now();
-
+        
         // Progress tracking (in memory)
         let progress = {
             fundamentals: 0,
@@ -1411,7 +1221,7 @@
             quizzesPassed: 0,
             videosWatched: []
         };
-
+        
         // Sector mapping for filtering
         const sectorMapping = {
             'tech': ['NVDA', 'AMD', 'MSFT', 'GOOGL', 'AAPL', 'TSM', 'ASML', 'SMCI', 'AVGO', 'INTC'],
@@ -1423,15 +1233,166 @@
             'commodities': ['GLD', 'SLV', 'NEM', 'GOLD'],
             'retail': ['AMZN', 'WMT', 'TGT', 'COST']
         };
-
+        
+        // ==================== AUTH FUNCTIONS ====================
+        
+        function initAuth() {
+            const storedToken = localStorage.getItem('auth_token');
+            const storedUser = localStorage.getItem('user');
+            
+            if (storedToken && storedUser) {
+                authToken = storedToken;
+                currentUser = JSON.parse(storedUser);
+                updateAuthUI();
+            }
+        }
+        
+        function openAuthModal() {
+            document.getElementById('authModal').classList.add('active');
+        }
+        
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+            document.getElementById('authError').classList.add('hidden');
+        }
+        
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            
+            if (isLoginMode) {
+                document.getElementById('authTitle').textContent = 'Welcome Back';
+                document.getElementById('authSubtitle').textContent = 'Login to track your portfolio';
+                document.getElementById('authSubmitBtn').textContent = 'Login';
+                document.getElementById('authToggle').textContent = "Don't have an account? Sign up";
+                document.getElementById('displayNameField').classList.add('hidden');
+            } else {
+                document.getElementById('authTitle').textContent = 'Create Account';
+                document.getElementById('authSubtitle').textContent = 'Start tracking your trade ideas';
+                document.getElementById('authSubmitBtn').textContent = 'Create Account';
+                document.getElementById('authToggle').textContent = 'Already have an account? Login';
+                document.getElementById('displayNameField').classList.remove('hidden');
+            }
+        }
+        
+        async function handleAuth(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            const displayName = document.getElementById('displayName').value;
+            
+            const errorDiv = document.getElementById('authError');
+            errorDiv.classList.add('hidden');
+            
+            try {
+                const endpoint = isLoginMode ? '/api/auth/login' : '/api/auth/signup';
+                const body = isLoginMode 
+                    ? { email, password }
+                    : { email, password, display_name: displayName };
+                
+                const response = await fetch(`${API_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.detail || 'Authentication failed');
+                }
+                
+                const data = await response.json();
+                authToken = data.token;
+                currentUser = data.user;
+                
+                localStorage.setItem('auth_token', authToken);
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                
+                updateAuthUI();
+                closeAuthModal();
+                showToast(`Welcome ${currentUser.display_name || currentUser.email}! 🎉`);
+                
+                // Clear form
+                document.getElementById('authEmail').value = '';
+                document.getElementById('authPassword').value = '';
+                document.getElementById('displayName').value = '';
+                
+            } catch (error) {
+                errorDiv.querySelector('p').textContent = error.message;
+                errorDiv.classList.remove('hidden');
+            }
+        }
+        
+        function updateAuthUI() {
+            if (currentUser) {
+                document.getElementById('authButtonContainer').classList.add('hidden');
+                document.getElementById('userMenuContainer').classList.remove('hidden');
+                
+                const firstLetter = (currentUser.display_name || currentUser.email)[0].toUpperCase();
+                document.getElementById('userAvatar').textContent = firstLetter;
+                document.getElementById('userName').textContent = currentUser.display_name || currentUser.email.split('@')[0];
+                document.getElementById('userEmail').textContent = currentUser.email;
+            } else {
+                document.getElementById('authButtonContainer').classList.remove('hidden');
+                document.getElementById('userMenuContainer').classList.add('hidden');
+            }
+        }
+        
+        function toggleUserMenu() {
+            document.getElementById('userMenu').classList.toggle('hidden');
+        }
+        
+        function logout() {
+            currentUser = null;
+            authToken = null;
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            updateAuthUI();
+            document.getElementById('userMenu').classList.add('hidden');
+            showToast('Logged out successfully');
+        }
+        
+        async function addToPortfolio(alertId, tradeIndex) {
+            if (!authToken) {
+                showToast('Please login to track trades');
+                openAuthModal();
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/api/portfolio/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        alert_id: alertId,
+                        trade_idea_index: tradeIndex
+                    })
+                });
+                
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.detail || 'Failed to add to portfolio');
+                }
+                
+                showToast('✅ Added to portfolio!');
+            } catch (error) {
+                showToast('❌ ' + error.message);
+            }
+        }
+        
+        // ==================== APP FUNCTIONS ====================
+        
         function scrollToSignup() {
             document.getElementById('signupSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-
+        
         function connectTelegram() {
             alert('🤖 To connect Telegram:\n\n1. Open Telegram\n2. Search for your bot\n3. Send /start\n\nYou\'ll receive alerts instantly!');
         }
-
+        
         function timeAgo(timestamp) {
             const now = Date.now();
             const diff = now - new Date(timestamp).getTime();
@@ -1439,13 +1400,13 @@
             const minutes = Math.floor(seconds / 60);
             const hours = Math.floor(minutes / 60);
             const days = Math.floor(hours / 24);
-
+            
             if (seconds < 60) return 'just now';
             if (minutes < 60) return `${minutes}m ago`;
             if (hours < 24) return `${hours}h ago`;
             return `${days}d ago`;
         }
-
+        
         function setFilter(type, value) {
             if (type === 'category') {
                 currentCategoryFilter = value;
@@ -1458,33 +1419,50 @@
             }
             filterAlerts();
         }
-
+        
         function sortAlerts() {
             currentSort = document.getElementById('sortSelect').value;
             filterAlerts();
         }
-
+        
         function matchesSector(alert, sector) {
             if (sector === 'all') return true;
             const tickers = sectorMapping[sector] || [];
+            
+            // Check trade_ideas array
+            if (alert.trade_ideas && alert.trade_ideas.length > 0) {
+                return alert.trade_ideas.some(trade => tickers.includes(trade.ticker));
+            }
+            
+            // Fallback to old structure
             const alertTicker = alert.trade_idea?.ticker;
             const affectedTickers = (alert.affected_assets || []).map(a => a.ticker);
             return tickers.includes(alertTicker) || affectedTickers.some(t => tickers.includes(t));
         }
-
+        
         function filterAlerts() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             let filtered = allAlerts.filter(alert => {
                 const event = alert.event || {};
                 const matchesCategory = currentCategoryFilter === 'all' || event.category === currentCategoryFilter;
                 const matchesSectorFilter = matchesSector(alert, currentSectorFilter);
-                const matchesSearch = !searchTerm || 
-                    event.headline?.toLowerCase().includes(searchTerm) ||
-                    alert.trade_idea?.ticker?.toLowerCase().includes(searchTerm) ||
-                    alert.affected_assets?.some(a => a.ticker.toLowerCase().includes(searchTerm));
+                
+                let matchesSearch = !searchTerm;
+                if (searchTerm) {
+                    matchesSearch = event.headline?.toLowerCase().includes(searchTerm);
+                    
+                    if (!matchesSearch && alert.trade_ideas) {
+                        matchesSearch = alert.trade_ideas.some(t => t.ticker.toLowerCase().includes(searchTerm));
+                    }
+                    
+                    if (!matchesSearch && alert.affected_assets) {
+                        matchesSearch = alert.affected_assets.some(a => a.ticker.toLowerCase().includes(searchTerm));
+                    }
+                }
+                
                 return matchesCategory && matchesSectorFilter && matchesSearch;
             });
-
+            
             // Sort
             if (currentSort === 'newest') {
                 filtered.sort((a, b) => new Date(b.event?.detected_at || 0) - new Date(a.event?.detected_at || 0));
@@ -1493,17 +1471,16 @@
             } else if (currentSort === 'relevance') {
                 filtered.sort((a, b) => (b.event?.confidence || 0) - (a.event?.confidence || 0));
             }
-
+            
             renderAlerts(filtered);
         }
-
+        
         async function loadAlerts(showNotification = false) {
             try {
-                const response = await fetch(API_URL);
+                const response = await fetch(`${API_URL}/api/alerts`);
                 const data = await response.json();
                 const newAlerts = data.alerts || [];
                 
-                // Merge new alerts with existing ones, keeping unique alerts
                 const existingIds = new Set(allAlerts.map(a => a.event?.headline + a.event?.detected_at));
                 const trulyNewAlerts = newAlerts.filter(alert => {
                     const id = alert.event?.headline + alert.event?.detected_at;
@@ -1514,10 +1491,9 @@
                     showToast(`${trulyNewAlerts.length} new alert${trulyNewAlerts.length > 1 ? 's' : ''} received!`);
                 }
                 
-                // Add new alerts to the beginning
                 allAlerts = [...trulyNewAlerts, ...allAlerts];
                 
-                // Remove alerts older than 24 hours to prevent memory issues
+                // Remove alerts older than 24 hours
                 const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
                 allAlerts = allAlerts.filter(alert => {
                     const alertTime = new Date(alert.event?.detected_at || Date.now()).getTime();
@@ -1535,7 +1511,7 @@
                 console.error('Error:', error);
             }
         }
-
+        
         function toggleAlert(id) {
             const details = document.getElementById(`details-${id}`);
             const btn = document.getElementById(`btn-${id}`);
@@ -1548,7 +1524,7 @@
                 btn.innerHTML = '▲ Hide Analysis';
             }
         }
-
+        
         function renderAlerts(alerts) {
             const container = document.getElementById('alertsContainer');
             
@@ -1562,19 +1538,17 @@
                 `;
                 return;
             }
-
+            
             container.innerHTML = alerts.map((alert, index) => {
                 const event = alert.event || {};
-                const tradeIdeas = alert.trade_ideas || (alert.trade_idea ? [alert.trade_idea] : []);
-                const scenarios = alert.scenarios || {};
-                const primaryDirection = event.primary_direction || 'neutral';
-                const assets = (alert.affected_assets || []).slice(0, 6);
+                const tradeIdeas = alert.trade_ideas || [];
+                const whyItMatters = alert.why_it_matters || [];
                 const confidence = Math.round((event.confidence || 0) * 100);
                 const timestamp = event.detected_at || new Date().toISOString();
-
+                const primaryDirection = event.primary_direction || 'neutral';
+                
                 return `
                     <div class="card glass rounded-2xl overflow-hidden">
-                        <!-- Collapsed Header -->
                         <div class="bg-gradient-to-r from-blue-600/20 to-purple-600/20 p-6 border-b border-slate-700/50">
                             <div class="flex items-start justify-between gap-4 mb-3">
                                 <h3 class="text-xl font-bold flex-1 leading-tight">${event.headline || 'Breaking News'}</h3>
@@ -1601,18 +1575,16 @@
                             </button>
                         </div>
                         
-                        <!-- Expandable Details -->
                         <div id="details-${index}" class="alert-details">
                             <div class="p-6 space-y-6">
-                                <!-- Why It Matters -->
-                                ${alert.why_it_matters && alert.why_it_matters.length > 0 ? `
+                                ${whyItMatters.length > 0 ? `
                                     <div class="bg-slate-800/40 rounded-xl p-4">
                                         <h4 class="font-bold mb-3 flex items-center gap-2">
                                             <span class="text-xl">💡</span>
                                             Why It Matters
                                         </h4>
                                         <ul class="space-y-2 text-slate-300 text-sm">
-                                            ${alert.why_it_matters.map(point => `
+                                            ${whyItMatters.map(point => `
                                                 <li class="flex gap-2">
                                                     <span class="text-blue-400 flex-shrink-0">•</span>
                                                     <span>${point}</span>
@@ -1621,56 +1593,64 @@
                                         </ul>
                                     </div>
                                 ` : ''}
-
-                                <!-- Multiple Trade Ideas -->
+                                
                                 ${tradeIdeas.length > 0 ? `
                                     <div>
                                         <h4 class="font-bold text-lg mb-4 flex items-center gap-2">
                                             <span class="text-xl">🎯</span>
                                             Trade Ideas (${tradeIdeas.length})
-                                            <span class="text-xs font-normal text-slate-400">- Ranked by conviction</span>
                                         </h4>
                                         <div class="space-y-4">
                                             ${tradeIdeas.map((trade, i) => {
-                                                const isBullish = trade.direction === 'bullish';
+                                                const isBullish = trade.direction === 'bullish' || trade.direction === 'long';
                                                 const convictionColor = 
                                                     trade.conviction === 'high' ? 'text-green-400' :
                                                     trade.conviction === 'medium' ? 'text-yellow-400' :
                                                     'text-orange-400';
                                                 
                                                 return `
-                                                    <div class="bg-gradient-to-br from-slate-800/60 to-slate-800/40 rounded-xl p-5 border border-slate-700/50 hover:border-blue-500/50 transition-all">
-                                                        <!-- Trade Header -->
+                                                    <div class="bg-gradient-to-br from-slate-800/60 to-slate-800/40 rounded-xl p-5 border border-slate-700/50">
                                                         <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
                                                             <div class="flex items-center gap-3">
-                                                                <span class="text-xs font-bold text-slate-400">#${i + 1}</span>
                                                                 <span class="font-mono font-black text-2xl">${trade.ticker}</span>
-                                                                <span class="${isBullish ? 'bg-green-500/20 text-green-400 border-green-500/40' : 'bg-red-500/20 text-red-400 border-red-500/40'} border px-3 py-1 rounded-full text-xs font-bold">
-                                                                    ${isBullish ? '📈 BULLISH' : '📉 BEARISH'}
+                                                                <span class="${isBullish ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'} px-3 py-1 rounded-full text-xs font-bold">
+                                                                    ${(trade.direction || 'neutral').toUpperCase()}
                                                                 </span>
+                                                                <span class="${convictionColor} text-xs font-bold">${(trade.conviction || 'medium').toUpperCase()}</span>
                                                             </div>
-                                                            <div class="flex items-center gap-2">
-                                                                <span class="bg-blue-600 px-3 py-1 rounded text-xs font-bold">${trade.strategy.toUpperCase()}</span>
-                                                                <span class="${convictionColor} text-xs font-bold">${trade.conviction.toUpperCase()}</span>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- Rationale -->
-                                                        <div class="bg-slate-900/50 rounded-lg p-4 mb-3">
-                                                            <h5 class="font-semibold text-blue-400 mb-2 text-sm">💡 Rationale</h5>
-                                                            <p class="text-slate-300 text-sm">${trade.rationale}</p>
-                                                        </div>
-
-                                                        <!-- Risk & Chart Link -->
-                                                        <div class="flex gap-2 flex-wrap">
-                                                            ${trade.risk ? `
-                                                                <div class="flex-1 bg-red-900/20 border border-red-800/50 rounded-lg p-3">
-                                                                    <p class="text-red-300 text-xs"><strong>⚠️ Risk:</strong> ${trade.risk}</p>
-                                                                </div>
+                                                            
+                                                            ${currentUser ? `
+                                                                <button onclick="addToPortfolio('${alert.id || index}', ${i})" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-semibold rounded-lg hover:from-blue-600 hover:to-purple-700 transition">
+                                                                    + Add to Portfolio
+                                                                </button>
                                                             ` : ''}
-                                                            <a href="https://finance.yahoo.com/quote/${trade.ticker}" target="_blank" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-semibold transition">
-                                                                View Chart →
-                                                            </a>
+                                                        </div>
+                                                        
+                                                        <p class="text-sm text-gray-300 mb-3"><strong>Strategy:</strong> ${trade.strategy || 'N/A'}</p>
+                                                        
+                                                        ${trade.entry_price ? `
+                                                            <div class="grid grid-cols-4 gap-3 mb-3">
+                                                                <div class="bg-gray-800 rounded-lg p-3">
+                                                                    <p class="text-xs text-gray-500 mb-1">Entry</p>
+                                                                    <p class="text-sm font-bold text-white">${trade.entry_price}</p>
+                                                                </div>
+                                                                <div class="bg-gray-800 rounded-lg p-3">
+                                                                    <p class="text-xs text-gray-500 mb-1">Target</p>
+                                                                    <p class="text-sm font-bold text-green-400">${trade.target_price || 'N/A'}</p>
+                                                                </div>
+                                                                <div class="bg-gray-800 rounded-lg p-3">
+                                                                    <p class="text-xs text-gray-500 mb-1">Stop Loss</p>
+                                                                    <p class="text-sm font-bold text-red-400">${trade.stop_loss || 'N/A'}</p>
+                                                                </div>
+                                                                <div class="bg-gray-800 rounded-lg p-3">
+                                                                    <p class="text-xs text-gray-500 mb-1">R/R</p>
+                                                                    <p class="text-sm font-bold text-blue-400">${trade.risk_reward_ratio || 'N/A'}</p>
+                                                                </div>
+                                                            </div>
+                                                        ` : ''}
+                                                        
+                                                        <div class="bg-slate-900/50 rounded-lg p-3">
+                                                            <p class="text-xs text-gray-400"><strong>Rationale:</strong> ${trade.rationale || 'N/A'}</p>
                                                         </div>
                                                     </div>
                                                 `;
@@ -1678,84 +1658,13 @@
                                         </div>
                                     </div>
                                 ` : ''}
-
-                                <!-- Market Scenarios -->
-                                ${scenarios.bull_case || scenarios.base_case || scenarios.bear_case ? `
-                                    <div>
-                                        <h4 class="font-bold text-lg mb-4 flex items-center gap-2">
-                                            <span class="text-xl">📊</span>
-                                            Market Scenarios
-                                        </h4>
-                                        <div class="space-y-3">
-                                            <!-- Bull Case -->
-                                            ${scenarios.bull_case ? `
-                                                <div class="bg-gradient-to-br from-green-900/30 to-green-800/20 border border-green-600/40 rounded-xl p-5">
-                                                    <div class="flex items-center justify-between mb-3">
-                                                        <h5 class="font-bold text-green-400">🐂 Bull Case</h5>
-                                                        <span class="bg-slate-900/50 px-3 py-1 rounded-full text-sm font-semibold">${scenarios.bull_case.probability}</span>
-                                                    </div>
-                                                    <p class="text-slate-300 text-sm mb-3">${scenarios.bull_case.description}</p>
-                                                    ${scenarios.bull_case.affected_assets && scenarios.bull_case.affected_assets.length > 0 ? `
-                                                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                                            ${scenarios.bull_case.affected_assets.map(asset => `
-                                                                <div class="bg-slate-900/50 rounded-lg p-2 flex items-center justify-between">
-                                                                    <span class="font-mono font-bold text-xs">${asset.ticker}</span>
-                                                                    <span class="${asset.impact === 'up' ? 'text-green-400' : 'text-red-400'} text-sm">
-                                                                        ${asset.impact === 'up' ? '↑' : '↓'} ${asset.magnitude}
-                                                                    </span>
-                                                                </div>
-                                                            `).join('')}
-                                                        </div>
-                                                    ` : ''}
-                                                </div>
-                                            ` : ''}
-
-                                            <!-- Base Case -->
-                                            ${scenarios.base_case ? `
-                                                <div class="bg-gradient-to-br from-blue-900/30 to-blue-800/20 border border-blue-600/40 rounded-xl p-5">
-                                                    <div class="flex items-center justify-between mb-3">
-                                                        <h5 class="font-bold text-blue-400">📊 Base Case</h5>
-                                                        <span class="bg-slate-900/50 px-3 py-1 rounded-full text-sm font-semibold">${scenarios.base_case.probability}</span>
-                                                    </div>
-                                                    <p class="text-slate-300 text-sm mb-3">${scenarios.base_case.description}</p>
-                                                    ${scenarios.base_case.affected_assets && scenarios.base_case.affected_assets.length > 0 ? `
-                                                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                                            ${scenarios.base_case.affected_assets.map(asset => `
-                                                                <div class="bg-slate-900/50 rounded-lg p-2 flex items-center justify-between">
-                                                                    <span class="font-mono font-bold text-xs">${asset.ticker}</span>
-                                                                    <span class="${asset.impact === 'up' ? 'text-green-400' : 'text-red-400'} text-sm">
-                                                                        ${asset.impact === 'up' ? '↑' : '↓'} ${asset.magnitude}
-                                                                    </span>
-                                                                </div>
-                                                            `).join('')}
-                                                        </div>
-                                                    ` : ''}
-                                                </div>
-                                            ` : ''}
-
-                                            <!-- Bear Case -->
-                                            ${scenarios.bear_case ? `
-                                                <div class="bg-gradient-to-br from-red-900/30 to-red-800/20 border border-red-600/40 rounded-xl p-5">
-                                                    <div class="flex items-center justify-between mb-3">
-                                                        <h5 class="font-bold text-red-400">🐻 Bear Case</h5>
-                                                        <span class="bg-slate-900/50 px-3 py-1 rounded-full text-sm font-semibold">${scenarios.bear_case.probability}</span>
-                                                    </div>
-                                                    <p class="text-slate-300 text-sm mb-3">${scenarios.bear_case.description}</p>
-                                                    ${scenarios.bear_case.affected_assets && scenarios.bear_case.affected_assets.length > 0 ? `
-                                                        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                                            ${scenarios.bear_case.affected_assets.map(asset => `
-                                                                <div class="bg-slate-900/50 rounded-lg p-2 flex items-center justify-between">
-                                                                    <span class="font-mono font-bold text-xs">${asset.ticker}</span>
-                                                                    <span class="${asset.impact === 'up' ? 'text-green-400' : 'text-red-400'} text-sm">
-                                                                        ${asset.impact === 'up' ? '↑' : '↓'} ${asset.magnitude}
-                                                                    </span>
-                                                                </div>
-                                                            `).join('')}
-                                                        </div>
-                                                    ` : ''}
-                                                </div>
-                                            ` : ''}
-                                        </div>
+                                
+                                ${!currentUser && tradeIdeas.length > 0 ? `
+                                    <div class="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                                        <p class="text-sm text-blue-300">
+                                            💡 <strong>Login to track these trades</strong> and see your portfolio performance!
+                                            <button onclick="openAuthModal()" class="ml-2 underline hover:text-blue-200">Login now</button>
+                                        </p>
                                     </div>
                                 ` : ''}
                             </div>
@@ -1764,15 +1673,17 @@
                 `;
             }).join('');
         }
-
+        
         function showToast(message) {
             const toast = document.createElement('div');
-            toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl z-50';
+            toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl z-50 animate-fadeIn';
             toast.textContent = message;
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
         }
-
+        
+        // ==================== EDUCATION FUNCTIONS ====================
+        
         function showCourse(courseId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -1780,7 +1691,7 @@
             document.querySelector(`[data-tab="${courseId}"]`).classList.add('active');
             document.getElementById(`course-${courseId}`).classList.add('active');
         }
-
+        
         function checkAnswer(quizId, selected, isCorrect) {
             const quiz = document.getElementById(`quiz${quizId}`);
             const answerDiv = document.getElementById(`answer${quizId}`);
@@ -1824,13 +1735,13 @@
             
             answerDiv.classList.remove('hidden');
         }
-
+        
         function completeLesson(course, lessonNum) {
             progress[course] = Math.max(progress[course], lessonNum + 1);
             updateProgress();
             showToast(`Lesson completed! Great job! 🎉`);
         }
-
+        
         function updateProgress() {
             const totalLessons = 16;
             const completed = progress.fundamentals + progress.analysis + progress.trading + progress.options + progress.risk;
@@ -1849,7 +1760,7 @@
                 document.getElementById(`bar-${course}`).style.width = (prog / 4 * 100) + '%';
             });
         }
-
+        
         function resetProgress() {
             if (confirm('Are you sure you want to reset all progress?')) {
                 progress = {
@@ -1865,7 +1776,7 @@
                 showToast('Progress reset successfully');
             }
         }
-
+        
         function watchVideo(videoId) {
             if (!progress.videosWatched.includes(videoId)) {
                 progress.videosWatched.push(videoId);
@@ -1880,7 +1791,7 @@
             
             showToast('Video marked as watched! 🎥');
         }
-
+        
         function calculateProfit() {
             const optionType = document.getElementById('optionType').value;
             const stockPrice = parseFloat(document.getElementById('stockPrice').value) || 0;
@@ -1897,7 +1808,6 @@
                 breakeven = strikePrice + premium;
                 intrinsicValue = Math.max(0, targetPrice - strikePrice);
                 
-                // Simplified delta calculation
                 const moneyness = (stockPrice - strikePrice) / stockPrice;
                 let delta = 0.5;
                 if (moneyness > 0.05) delta = 0.7;
@@ -1948,21 +1858,29 @@
             document.getElementById('gammaCalc').textContent = (0.05).toFixed(2);
             document.getElementById('maxRisk').textContent = '$' + totalInvestment.toFixed(0);
         }
-
+        
+        // Close user menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const userMenuContainer = document.getElementById('userMenuContainer');
+            const userMenu = document.getElementById('userMenu');
+            
+            if (userMenuContainer && !userMenuContainer.contains(event.target)) {
+                userMenu.classList.add('hidden');
+            }
+        });
+        
         // Update "time ago" every 30 seconds
         setInterval(() => {
             document.getElementById('updateTime').textContent = timeAgo(lastFetchTime);
         }, 30000);
-
-        // Load alerts on page load
-        loadAlerts();
         
-        // Initialize progress display
+        // ==================== INITIALIZE ====================
+        initAuth();
+        loadAlerts();
         updateProgress();
         
-        // Auto-refresh every 15 seconds
+        // Auto-refresh alerts every 15 seconds
         setInterval(() => loadAlerts(true), 15000);
     </script>
-
 </body>
 </html>
