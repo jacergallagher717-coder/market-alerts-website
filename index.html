@@ -1477,35 +1477,54 @@
         }
         
         async function addToPortfolio(alertId, tradeIndex) {
-            if (!authToken) {
-                showToast('Please login to track trades');
-                openAuthModal();
-                return;
-            }
-            
-            try {
-                const response = await fetch(`${API_URL}/api/portfolio/add`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({
-                        alert_id: alertId,
-                        trade_idea_index: tradeIndex
-                    })
-                });
-                
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.detail || 'Failed to add to portfolio');
-                }
-                
-                showToast('✅ Added to portfolio!');
-            } catch (error) {
-                showToast('❌ ' + error.message);
-            }
+    if (!authToken) {
+        showToast('Please login to track trades');
+        openAuthModal();
+        return;
+    }
+    
+    try {
+        // Get the actual alert object
+        const alert = allAlerts[alertId];
+        if (!alert || !alert.trade_ideas || !alert.trade_ideas[tradeIndex]) {
+            showToast('❌ Trade idea not found');
+            return;
         }
+        
+        const trade = alert.trade_ideas[tradeIndex];
+        
+        const response = await fetch(`${API_URL}/api/portfolio/add`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+                ticker: trade.ticker,
+                direction: trade.direction,
+                strategy: trade.strategy,
+                entry_price: trade.entry_price,
+                target_price: trade.target_price,
+                stop_loss: trade.stop_loss,
+                risk_reward_ratio: trade.risk_reward_ratio,
+                rationale: trade.rationale,
+                conviction: trade.conviction,
+                headline: alert.event?.headline || 'Market Alert',
+                detected_at: alert.event?.detected_at || new Date().toISOString()
+            })
+        });
+        
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.detail || 'Failed to add to portfolio');
+        }
+        
+        showToast('✅ Added to portfolio!');
+    } catch (error) {
+        showToast('❌ ' + error.message);
+        console.error(error);
+    }
+}
         
         async function removeFromPortfolio(tradeId) {
             if (!confirm('Remove this trade from your portfolio?')) return;
