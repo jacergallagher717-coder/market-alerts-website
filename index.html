@@ -1799,7 +1799,7 @@
                                                             </div>
                                                             
                                                             ${currentUser ? `
-                                                                <button onclick="addToPortfolio('${alert.id || index}', ${i})" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-semibold rounded-lg hover:from-blue-600 hover:to-purple-700 transition">
+                                                                <button onclick="addToPortfolio(${index}, ${i})", ${i})" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm font-semibold rounded-lg hover:from-blue-600 hover:to-purple-700 transition">
                                                                     + Add to Portfolio
                                                                 </button>
                                                             ` : ''}
