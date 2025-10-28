@@ -104,13 +104,6 @@
         </div>
     </div>
 
-    <!-- Sticky CTA Bar -->
-    <div class="fixed top-4 right-4 z-50">
-        <button onclick="scrollToSignup()" class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-6 py-3 rounded-full font-bold shadow-2xl transition-all hover:scale-105">
-            🚀 Start Free
-        </button>
-    </div>
-    
     <!-- Header -->
     <header class="glass sticky top-0 z-40 border-b border-slate-700/50 shadow-2xl">
         <div class="max-w-7xl mx-auto px-6 py-4">
@@ -129,8 +122,9 @@
                 
                 <!-- Navigation -->
                 <nav class="hidden md:flex items-center gap-6">
-                    <a href="#alerts" class="hover:text-blue-400 font-semibold transition">Alerts</a>
-                    <a href="#education" class="hover:text-blue-400 font-semibold transition">Learn</a>
+                    <a href="#alerts" onclick="showSection('alerts')" class="hover:text-blue-400 font-semibold transition cursor-pointer">Alerts</a>
+                    <a href="#portfolio" onclick="showPortfolio()" class="hover:text-blue-400 font-semibold transition cursor-pointer">📊 Portfolio</a>
+                    <a href="#education" onclick="showSection('education')" class="hover:text-blue-400 font-semibold transition cursor-pointer">Learn</a>
                     <div class="flex items-center gap-3">
                         <div class="bg-green-500/20 border border-green-500/40 px-3 py-1.5 rounded-full flex items-center gap-2">
                             <span class="w-2 h-2 bg-green-500 rounded-full live-pulse"></span>
@@ -310,6 +304,25 @@
             </div>
         </div>
     </main>
+
+    <!-- Portfolio Section -->
+    <section class="max-w-7xl mx-auto px-6 py-16 border-t border-slate-800" id="portfolio" style="display: none;">
+        <div class="text-center mb-12">
+            <h2 class="text-5xl font-black mb-4">📊 My Portfolio</h2>
+            <p class="text-xl text-slate-400">Track your trade ideas and performance</p>
+        </div>
+
+        <div id="portfolioContainer" class="space-y-4">
+            <div class="glass rounded-2xl p-16 text-center">
+                <div class="text-8xl mb-6">📊</div>
+                <h3 class="text-3xl font-black mb-3">No Trades Yet</h3>
+                <p class="text-xl text-slate-400 mb-6">Start adding trade ideas from the alerts below!</p>
+                <button onclick="showSection('alerts')" class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition">
+                    Browse Alerts
+                </button>
+            </div>
+        </div>
+    </section>
 
     <!-- Education Center -->
     <section class="max-w-7xl mx-auto px-6 py-16 border-t border-slate-800" id="education">
@@ -1234,6 +1247,23 @@
             'retail': ['AMZN', 'WMT', 'TGT', 'COST']
         };
         
+        // ==================== SECTION NAVIGATION ====================
+        
+        function showSection(sectionId) {
+            // Hide all sections
+            document.getElementById('alerts').style.display = 'none';
+            document.getElementById('portfolio').style.display = 'none';
+            document.getElementById('education').style.display = 'none';
+            
+            // Show requested section
+            if (sectionId === 'alerts') {
+                document.getElementById('alerts').style.display = 'block';
+                document.querySelector('main').style.display = 'block';
+            } else if (sectionId === 'education') {
+                document.getElementById('education').style.display = 'block';
+            }
+        }
+        
         // ==================== AUTH FUNCTIONS ====================
         
         function initAuth() {
@@ -1352,6 +1382,100 @@
             showToast('Logged out successfully');
         }
         
+        // ==================== PORTFOLIO FUNCTIONS ====================
+        
+        async function showPortfolio() {
+            if (!authToken) {
+                showToast('Please login to view portfolio');
+                openAuthModal();
+                return;
+            }
+            
+            // Hide other sections
+            document.getElementById('alerts').style.display = 'none';
+            document.querySelector('main').style.display = 'none';
+            document.getElementById('education').style.display = 'none';
+            document.getElementById('portfolio').style.display = 'block';
+            
+            loadPortfolio();
+        }
+        
+        async function loadPortfolio() {
+            try {
+                const response = await fetch(`${API_URL}/api/portfolio`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load portfolio');
+                
+                const data = await response.json();
+                const trades = data.trades || [];
+                
+                const container = document.getElementById('portfolioContainer');
+                
+                if (trades.length === 0) {
+                    container.innerHTML = `
+                        <div class="glass rounded-2xl p-16 text-center">
+                            <div class="text-8xl mb-6">📊</div>
+                            <h3 class="text-3xl font-black mb-3">No Trades Yet</h3>
+                            <p class="text-xl text-slate-400 mb-6">Start adding trade ideas from the alerts!</p>
+                            <button onclick="showSection('alerts')" class="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition">
+                                Browse Alerts
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = trades.map(trade => `
+                    <div class="glass rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-2xl font-bold">${trade.ticker}</h3>
+                                <p class="text-sm text-gray-400">Added ${timeAgo(trade.added_at)}</p>
+                            </div>
+                            <span class="${trade.direction === 'bullish' || trade.direction === 'long' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'} px-4 py-2 rounded-full font-bold">
+                                ${(trade.direction || 'neutral').toUpperCase()}
+                            </span>
+                        </div>
+                        
+                        ${trade.entry_price ? `
+                            <div class="grid grid-cols-4 gap-4 mb-4">
+                                <div class="bg-slate-800/50 rounded-lg p-3">
+                                    <p class="text-xs text-gray-500 mb-1">Entry</p>
+                                    <p class="text-sm font-bold">${trade.entry_price}</p>
+                                </div>
+                                <div class="bg-slate-800/50 rounded-lg p-3">
+                                    <p class="text-xs text-gray-500 mb-1">Target</p>
+                                    <p class="text-sm font-bold text-green-400">${trade.target_price || 'N/A'}</p>
+                                </div>
+                                <div class="bg-slate-800/50 rounded-lg p-3">
+                                    <p class="text-xs text-gray-500 mb-1">Stop</p>
+                                    <p class="text-sm font-bold text-red-400">${trade.stop_loss || 'N/A'}</p>
+                                </div>
+                                <div class="bg-slate-800/50 rounded-lg p-3">
+                                    <p class="text-xs text-gray-500 mb-1">Status</p>
+                                    <p class="text-sm font-bold text-yellow-400">${trade.status || 'ACTIVE'}</p>
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        <p class="text-sm text-gray-300 mb-3">${trade.rationale || 'No rationale provided'}</p>
+                        
+                        <button onclick="removeFromPortfolio('${trade.id}')" class="text-red-400 hover:text-red-300 text-sm transition">
+                            Remove from portfolio
+                        </button>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                showToast('Failed to load portfolio');
+                console.error(error);
+            }
+        }
+        
         async function addToPortfolio(alertId, tradeIndex) {
             if (!authToken) {
                 showToast('Please login to track trades');
@@ -1383,11 +1507,27 @@
             }
         }
         
-        // ==================== APP FUNCTIONS ====================
-        
-        function scrollToSignup() {
-            document.getElementById('signupSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        async function removeFromPortfolio(tradeId) {
+            if (!confirm('Remove this trade from your portfolio?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/portfolio/${tradeId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!response.ok) throw new Error('Failed to remove');
+                
+                showToast('Removed from portfolio');
+                loadPortfolio();
+            } catch (error) {
+                showToast('Failed to remove trade');
+            }
         }
+        
+        // ==================== APP FUNCTIONS ====================
         
         function connectTelegram() {
             alert('🤖 To connect Telegram:\n\n1. Open Telegram\n2. Search for your bot\n3. Send /start\n\nYou\'ll receive alerts instantly!');
@@ -1676,7 +1816,7 @@
         
         function showToast(message) {
             const toast = document.createElement('div');
-            toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl z-50 animate-fadeIn';
+            toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl z-50';
             toast.textContent = message;
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
