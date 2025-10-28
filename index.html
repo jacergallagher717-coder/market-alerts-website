@@ -1476,7 +1476,7 @@
             }
         }
         
-        async function addToPortfolio(alertId, tradeIndex) {
+        async function addToPortfolio(alertIndex, tradeIndex) {
     if (!authToken) {
         showToast('Please login to track trades');
         openAuthModal();
@@ -1484,14 +1484,34 @@
     }
     
     try {
-        // Get the actual alert object
-        const alert = allAlerts[alertId];
-        if (!alert || !alert.trade_ideas || !alert.trade_ideas[tradeIndex]) {
-            showToast('❌ Trade idea not found');
+        console.log('=== DEBUG addToPortfolio ===');
+        console.log('alertIndex:', alertIndex);
+        console.log('tradeIndex:', tradeIndex);
+        console.log('allAlerts length:', allAlerts.length);
+        console.log('allAlerts:', allAlerts);
+        
+        const alert = allAlerts[alertIndex];
+        
+        if (!alert) {
+            showToast('❌ Alert not found at index ' + alertIndex);
+            console.error('Alert not found. Index:', alertIndex, 'Total alerts:', allAlerts.length);
+            return;
+        }
+        
+        if (!alert.trade_ideas) {
+            showToast('❌ No trade ideas in this alert');
+            console.error('No trade_ideas array in alert:', alert);
+            return;
+        }
+        
+        if (!alert.trade_ideas[tradeIndex]) {
+            showToast('❌ Trade idea not found at index ' + tradeIndex);
+            console.error('Trade not found. Index:', tradeIndex, 'Total trades:', alert.trade_ideas.length);
             return;
         }
         
         const trade = alert.trade_ideas[tradeIndex];
+        console.log('Found trade:', trade);
         
         const response = await fetch(`${API_URL}/api/portfolio/add`, {
             method: 'POST',
@@ -1522,7 +1542,7 @@
         showToast('✅ Added to portfolio!');
     } catch (error) {
         showToast('❌ ' + error.message);
-        console.error(error);
+        console.error('Add to portfolio error:', error);
     }
 }
         
