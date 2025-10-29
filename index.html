@@ -1484,34 +1484,13 @@
     }
     
     try {
-        console.log('=== DEBUG addToPortfolio ===');
-        console.log('alertIndex:', alertIndex);
-        console.log('tradeIndex:', tradeIndex);
-        console.log('allAlerts length:', allAlerts.length);
-        console.log('allAlerts:', allAlerts);
-        
         const alert = allAlerts[alertIndex];
         
-        if (!alert) {
-            showToast('❌ Alert not found at index ' + alertIndex);
-            console.error('Alert not found. Index:', alertIndex, 'Total alerts:', allAlerts.length);
+        if (!alert || !alert.id) {
+            showToast('❌ Alert not found or missing ID');
+            console.error('Alert issue:', alert);
             return;
         }
-        
-        if (!alert.trade_ideas) {
-            showToast('❌ No trade ideas in this alert');
-            console.error('No trade_ideas array in alert:', alert);
-            return;
-        }
-        
-        if (!alert.trade_ideas[tradeIndex]) {
-            showToast('❌ Trade idea not found at index ' + tradeIndex);
-            console.error('Trade not found. Index:', tradeIndex, 'Total trades:', alert.trade_ideas.length);
-            return;
-        }
-        
-        const trade = alert.trade_ideas[tradeIndex];
-        console.log('Found trade:', trade);
         
         const response = await fetch(`${API_URL}/api/portfolio/add`, {
             method: 'POST',
@@ -1520,30 +1499,26 @@
                 'Authorization': `Bearer ${authToken}`
             },
             body: JSON.stringify({
-                ticker: trade.ticker,
-                direction: trade.direction,
-                strategy: trade.strategy,
-                entry_price: trade.entry_price,
-                target_price: trade.target_price,
-                stop_loss: trade.stop_loss,
-                risk_reward_ratio: trade.risk_reward_ratio,
-                rationale: trade.rationale,
-                conviction: trade.conviction,
-                headline: alert.event?.headline || 'Market Alert',
-                detected_at: alert.event?.detected_at || new Date().toISOString()
+                alert_id: alert.id,
+                trade_idea_index: tradeIndex,
+                entry_price: null,
+                quantity: 1,
+                notes: null
             })
         });
         
         if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.detail || 'Failed to add to portfolio');
+            const errorData = await response.json();
+            throw new Error(errorData.detail || 'Failed to add to portfolio');
         }
         
         showToast('✅ Added to portfolio!');
+        
     } catch (error) {
-    const errorMessage = error.message || 'Failed to add to portfolio';
-    showToast('❌ ' + errorMessage);
-    console.error('Add to portfolio error:', error);
+        const errorMessage = error.message || 'Failed to add to portfolio';
+        showToast('❌ ' + errorMessage);
+        console.error('Add to portfolio error:', error);
+    }
 }
         
         async function removeFromPortfolio(tradeId) {
