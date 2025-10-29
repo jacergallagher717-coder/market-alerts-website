@@ -1541,9 +1541,9 @@
         
         showToast('✅ Added to portfolio!');
     } catch (error) {
-        showToast('❌ ' + error.message);
-        console.error('Add to portfolio error:', error);
-    }
+    const errorMessage = error.message || 'Failed to add to portfolio';
+    showToast('❌ ' + errorMessage);
+    console.error('Add to portfolio error:', error);
 }
         
         async function removeFromPortfolio(tradeId) {
