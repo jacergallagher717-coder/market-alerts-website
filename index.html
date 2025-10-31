@@ -2178,7 +2178,155 @@
         setInterval(() => {
             document.getElementById('updateTime').textContent = timeAgo(lastFetchTime);
         }, 30000);
+
+
+        // ==================== REAL-TIME PRICES ====================
         
+        let priceCache = {};
+        let priceUpdateInterval = null;
+        
+        async function fetchPrices(tickers) {
+            if (!tickers || tickers.length === 0) return {};
+            
+            const uniqueTickers = [...new Set(tickers)].filter(t => t && t !== 'N/A' && t !== 'TBD');
+            
+            if (uniqueTickers.length === 0) return {};
+            
+            try {
+                const response = await fetch(`${API_URL}/api/prices?tickers=${uniqueTickers.join(',')}`);
+                const data = await response.json();
+                
+                // Update cache
+                priceCache = { ...priceCache, ...data.prices };
+                
+                return data.prices;
+            } catch (error) {
+                console.error('Error fetching prices:', error);
+                return {};
+            }
+        }
+        
+        function formatPrice(price) {
+            if (!price || price === 0) return 'N/A';
+            return '$' + price.toFixed(2);
+        }
+        
+        function formatPriceChange(change, changePercent) {
+            if (change === undefined || change === null) return '';
+            
+            const symbol = change >= 0 ? '↑' : '↓';
+            const color = change >= 0 ? 'text-green-400' : 'text-red-400';
+            
+            return `<span class="${color}">${symbol} ${Math.abs(changePercent || 0).toFixed(2)}%</span>`;
+        }
+        
+        async function updateAllPrices() {
+            // Get all tickers from current view
+            const tickers = [];
+            
+            // Get tickers from alerts
+            if (currentSection === 'alerts') {
+                allAlerts.forEach(alert => {
+                    if (alert.trade_ideas) {
+                        alert.trade_ideas.forEach(trade => {
+                            if (trade.ticker && trade.ticker !== 'TBD') {
+                                tickers.push(trade.ticker);
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // Get tickers from portfolio
+            if (currentSection === 'portfolio') {
+                const portfolioTickers = document.querySelectorAll('[data-ticker]');
+                portfolioTickers.forEach(el => {
+                    const ticker = el.getAttribute('data-ticker');
+                    if (ticker && ticker !== 'TBD') tickers.push(ticker);
+                });
+            }
+            
+            if (tickers.length === 0) return;
+            
+            const prices = await fetchPrices(tickers);
+            
+            // Update price displays
+            Object.keys(prices).forEach(ticker => {
+                const priceData = prices[ticker];
+                const elements = document.querySelectorAll(`[data-ticker="${ticker}"]`);
+                
+                elements.forEach(el => {
+                    const priceSpan = el.querySelector('.live-price');
+                    const changeSpan = el.querySelector('.price-change');
+                    
+                    if (priceSpan && priceData.price) {
+                        priceSpan.textContent = formatPrice(priceData.price);
+                    }
+                    
+                    if (changeSpan && priceData.change !== undefined) {
+                        changeSpan.innerHTML = formatPriceChange(priceData.change, priceData.change_percent);
+                    }
+                    
+                    // Update unrealized P&L for portfolio
+                    if (currentSection === 'portfolio') {
+                        updateUnrealizedPnL(el, priceData.price);
+                    }
+                });
+            });
+        }
+        
+        function updateUnrealizedPnL(element, currentPrice) {
+            const entryPrice = parseFloat(element.getAttribute('data-entry-price'));
+            const quantity = parseFloat(element.getAttribute('data-quantity') || 1);
+            const direction = element.getAttribute('data-direction');
+            
+            if (!entryPrice || !currentPrice) return;
+            
+            let pnlDollars, pnlPercent;
+            
+            if (direction === 'long' || direction === 'bullish') {
+                pnlDollars = (currentPrice - entryPrice) * quantity;
+                pnlPercent = ((currentPrice - entryPrice) / entryPrice) * 100;
+            } else {
+                pnlDollars = (entryPrice - currentPrice) * quantity;
+                pnlPercent = ((entryPrice - currentPrice) / entryPrice) * 100;
+            }
+            
+            const pnlDollarEl = element.querySelector('.unrealized-pnl-dollars');
+            const pnlPercentEl = element.querySelector('.unrealized-pnl-percent');
+            
+            const color = pnlDollars >= 0 ? 'text-green-400' : 'text-red-400';
+            
+            if (pnlDollarEl) {
+                pnlDollarEl.className = `unrealized-pnl-dollars font-bold ${color}`;
+                pnlDollarEl.textContent = (pnlDollars >= 0 ? '+$' : '-$') + Math.abs(pnlDollars).toFixed(2);
+            }
+            
+            if (pnlPercentEl) {
+                pnlPercentEl.className = `unrealized-pnl-percent font-bold ${color}`;
+                pnlPercentEl.textContent = (pnlPercent >= 0 ? '+' : '') + pnlPercent.toFixed(2) + '%';
+            }
+        }
+        
+        function startPriceUpdates() {
+            // Stop existing interval
+            if (priceUpdateInterval) {
+                clearInterval(priceUpdateInterval);
+            }
+            
+            // Update immediately
+            updateAllPrices();
+            
+            // Update every 30 seconds
+            priceUpdateInterval = setInterval(updateAllPrices, 30000);
+        }
+        
+        function stopPriceUpdates() {
+            if (priceUpdateInterval) {
+                clearInterval(priceUpdateInterval);
+                priceUpdateInterval = null;
+            }
+        }
         // ==================== INITIALIZE ====================
         initAuth();
         loadAlerts();
