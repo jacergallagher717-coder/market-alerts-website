@@ -1298,6 +1298,13 @@
             } else if (sectionId === 'education') {
                 document.getElementById('education').style.display = 'block';
             }
+
+            // Start price updates for alerts and portfolio
+    if (sectionId === 'alerts' || sectionId === 'portfolio') {
+        startPriceUpdates();
+    } else {
+        stopPriceUpdates();
+    }
         }
         
         // ==================== AUTH FUNCTIONS ====================
